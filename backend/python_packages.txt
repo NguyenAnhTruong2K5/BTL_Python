@@ -1,0 +1,8 @@
+# Web framework
+fastapi==0.115.0
+
+# Server
+uvicorn[standard]>=0.23.0
+
+# Data validation
+pydantic[email]>=2.8
