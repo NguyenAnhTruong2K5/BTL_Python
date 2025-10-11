@@ -1,0 +1,36 @@
+# Bỏ các file Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+
+# Bỏ database mặc định (nếu không muốn đẩy lên GitHub)
+db.sqlite3
+
+# Bỏ file môi trường (nếu dùng sau này)
+.env
+*.env
+
+# Bỏ folder ảo (Virtual Environment)
+venv/
+ENV/
+env/
+.venv/
+
+# Bỏ file tạo bởi IDE/Editor
+.vscode/
+.idea/
+*.swp
+
+# Bỏ static và media (nếu sinh tự động hoặc sẽ thu thập sau)
+static/
+media/
+
+# Bỏ file hệ thống
+.DS_Store
+Thumbs.db
+
+# Bỏ logs (nếu có)
+logs/
+*.log
