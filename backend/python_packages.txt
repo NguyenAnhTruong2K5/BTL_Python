@@ -9,5 +9,5 @@ uvicorn[standard]>=0.23.0
 # Data validation
 pydantic[email]>=2.8
 
-#MySQL
-mysql-connector-python==9.0.0
+#pyodbc
+pyodbc==5.1.0
