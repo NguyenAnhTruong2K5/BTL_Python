@@ -95,7 +95,7 @@ CREATE TABLE ParkingRecords (
     fee DECIMAL(18,2) NULL,
     FOREIGN KEY (slot_id) REFERENCES ParkingSlots(slot_id),
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id),
-    FOREIGN KEY (card_id) REFERENCES Cards(card_id);
+    FOREIGN KEY (card_id) REFERENCES Cards(card_id)
 );
 GO
 
