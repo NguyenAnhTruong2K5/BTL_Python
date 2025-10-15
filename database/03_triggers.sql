@@ -34,31 +34,52 @@ BEGIN
     SET NOCOUNT ON;
 
     ;WITH CheckoutRecords AS (
-        SELECT i.record_id, i.vehicle_id, i.card_id
+        SELECT 
+            i.record_id,
+            i.vehicle_id,
+            i.card_id
         FROM inserted i
         JOIN deleted d ON i.record_id = d.record_id
-        WHERE i.check_out_time IS NOT NULL AND d.check_out_time IS NULL
+        WHERE i.check_out_time IS NOT NULL 
+          AND d.check_out_time IS NULL
     )
     SELECT * INTO #tmpCheckout FROM CheckoutRecords;
 
     IF EXISTS (SELECT 1 FROM #tmpCheckout)
     BEGIN
-        DECLARE @rid INT, @veh_id INT, @cid INT, @fee DECIMAL(18,2), @hours_total INT;
+        DECLARE 
+            @rid INT,
+            @veh_id INT,
+            @cid INT,
+            @fee DECIMAL(18,2),
+            @hours_total INT,
+            @card_status NVARCHAR(20);
 
         DECLARE cur CURSOR FAST_FORWARD FOR
             SELECT record_id, vehicle_id, card_id FROM #tmpCheckout;
 
         OPEN cur;
         FETCH NEXT FROM cur INTO @rid, @veh_id, @cid;
+
         WHILE @@FETCH_STATUS = 0
         BEGIN
+            -- Kiểm tra trạng thái của thẻ trước khi checkout
+            SELECT @card_status = status FROM Cards WHERE card_id = @cid;
+
+            IF @card_status <> 'active'
+            BEGIN
+                RAISERROR ('Không thể check-out: thẻ này không ở trạng thái active (có thể bị rơi hoặc vô hiệu).', 16, 1);
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+
             -- Tính phí
             EXEC sp_CalcFeeForRecord 
-                @record_id = @rid, 
-                @out_fee = @fee OUTPUT, 
+                @record_id = @rid,
+                @out_fee = @fee OUTPUT,
                 @out_hours_total = @hours_total OUTPUT;
 
-            -- Nếu fee > 0, tự động tạo hóa đơn cho người check out
+            -- Nếu fee > 0, tạo hóa đơn
             IF @fee > 0
                 EXEC sp_CreateInvoice @rid, @fee, 'cash';
 
@@ -69,10 +90,9 @@ BEGIN
             JOIN ParkingRecords pr ON ps.slot_id = pr.slot_id
             WHERE pr.record_id = @rid;
 
-            -- Cập nhật Card thành inactive và xóa dữ liệu vehicle_id (để tái sử dụng lại)
+            -- Cập nhật Card thành inactive và xóa dữ liệu xe
             UPDATE Cards
-            SET status = 'inactive',
-                vehicle_id = NULL
+            SET status = 'inactive', vehicle_id = NULL
             WHERE card_id = @cid;
 
             FETCH NEXT FROM cur INTO @rid, @veh_id, @cid;
@@ -85,5 +105,6 @@ BEGIN
     DROP TABLE #tmpCheckout;
 END;
 GO
+
 
 
