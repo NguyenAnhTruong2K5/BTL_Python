@@ -56,12 +56,13 @@ GO
 -- Bảng Contracts (monthly)
 -- ========================================
 CREATE TABLE Contracts (
-    contract_id INT IDENTITY(1,1) PRIMARY KEY,
+    vehicle_id INT PRIMARY KEY,      -- vehicle là khóa chính
     pricing_id INT NOT NULL,
-    vehicle_id INT NOT NULL,
     customer_id INT NOT NULL,
     start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
+    end_date DATE NULL,              -- sẽ được tự động tính: start_date + thời gian hợp đồng (bao tháng, bao năm)
+    duration_type NVARCHAR(10) CHECK (duration_type IN ('month','year')) NOT NULL,    -- loại thời hạn (tháng/năm)
+    duration_value INT NOT NULL,     -- số tháng hoặc năm
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id),
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
