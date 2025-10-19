@@ -24,7 +24,7 @@ GO
 -- ========================================
 CREATE TABLE Customers (
     customer_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('cusid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_customer AS VARCHAR(6)), 6)),
+        DEFAULT ('CUST' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_customer AS VARCHAR(6)), 6)),
     name NVARCHAR(100),
     phone_number NVARCHAR(20),
     email NVARCHAR(100)
@@ -36,7 +36,7 @@ GO
 -- ========================================
 CREATE TABLE Vehicle (
     vehicle_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('vehid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_vehicle AS VARCHAR(6)), 6)),
+        DEFAULT ('VEHI' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_vehicle AS VARCHAR(6)), 6)),
     customer_id VARCHAR(20) NOT NULL,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
     plate_number NVARCHAR(20) UNIQUE,
@@ -49,7 +49,7 @@ CREATE TABLE Vehicle (
 -- ========================================
 CREATE TABLE ParkingSlots (
     slot_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('slotid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_slot AS VARCHAR(6)), 6)),
+        DEFAULT ('SLOT' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_slot AS VARCHAR(6)), 6)),
     slot_name NVARCHAR(50) NOT NULL,
     capacity INT NOT NULL,
     slots INT NOT NULL
@@ -76,10 +76,9 @@ CREATE TABLE Contracts (
     customer_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NULL,              -- sẽ được tự động tính: start_date + thời gian hợp đồng (bao tháng, bao năm)
-    duration_type NVARCHAR(10) CHECK (duration_type IN ('month','year')) NOT NULL,    -- loại thời hạn (tháng/năm)
-    duration_value INT NOT NULL,     -- số tháng hoặc năm
+    term NVARCHAR(10) CHECK (duration_type IN ('month','year')) NOT NULL,    -- loại thời hạn (tháng/năm)
+    duration INT NOT NULL,     -- số tháng hoặc năm
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
-    FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id),
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
 );
 GO
