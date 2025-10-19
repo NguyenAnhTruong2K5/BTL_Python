@@ -1,14 +1,14 @@
 -- ========================================
--- Tạo database
+-- Database
 -- ========================================
 CREATE DATABASE ParkingManagement;
 GO
 
 USE ParkingManagement;
 GO
-    
+
 -- ========================================
--- Tạo SEQUENCE cho các bảng có mã tự tăng định dạng
+-- SEQUENCES
 -- ========================================
 CREATE SEQUENCE seq_customer START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_vehicle START WITH 1 INCREMENT BY 1;
@@ -20,7 +20,7 @@ CREATE SEQUENCE seq_invoice START WITH 1 INCREMENT BY 1;
 GO
 
 -- ========================================
--- Bảng Customers
+-- Customers
 -- ========================================
 CREATE TABLE Customers (
     customer_id VARCHAR(20) PRIMARY KEY 
@@ -32,7 +32,7 @@ CREATE TABLE Customers (
 GO
 
 -- ========================================
--- Bảng Vehicle
+-- Vehicle
 -- ========================================
 CREATE TABLE Vehicle (
     vehicle_id VARCHAR(20) PRIMARY KEY 
@@ -42,10 +42,10 @@ CREATE TABLE Vehicle (
     plate_number NVARCHAR(20) UNIQUE,
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
 );
-
+GO
 
 -- ========================================
--- Bảng ParkingSlots
+-- ParkingSlots
 -- ========================================
 CREATE TABLE ParkingSlots (
     slot_id VARCHAR(20) PRIMARY KEY 
@@ -57,55 +57,55 @@ CREATE TABLE ParkingSlots (
 GO
 
 -- ========================================
--- Bảng Pricing
+-- Pricing
 -- ========================================
 CREATE TABLE Pricing (
     pricing_id VARCHAR(20) PRIMARY KEY,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
-    term NVARCHAR(10) NOT NULL CHECK(type IN ('hourly','monthly')),
+    term NVARCHAR(10) NOT NULL CHECK(term IN ('hourly','monthly')),
     rate DECIMAL(18,2) NOT NULL
 );
 GO
 
 -- ========================================
--- Bảng Contracts (monthly)
+-- Contracts
 -- ========================================
 CREATE TABLE Contracts (
-    vehicle_id INT PRIMARY KEY,      -- vehicle là khóa chính
-    pricing_id INT NOT NULL,
-    customer_id INT NOT NULL,
+    vehicle_id VARCHAR(20) PRIMARY KEY,      -- Vehicle là khóa chính (1 xe 1 hợp đồng)
+    pricing_id VARCHAR(20) NOT NULL,
+    customer_id VARCHAR(20) NOT NULL,
     start_date DATE NOT NULL,
-    end_date DATE NULL,              -- sẽ được tự động tính: start_date + thời gian hợp đồng (bao tháng, bao năm)
-    term NVARCHAR(10) CHECK (term IN ('monthly','yearly')) NOT NULL,    -- loại thời hạn (tháng/năm)
-    duration INT NOT NULL,     -- số tháng hoặc năm
+    end_date DATE NULL,
+    term NVARCHAR(10) CHECK (term IN ('monthly','yearly')) NOT NULL,    -- thời hạn
+    duration INT NOT NULL,   -- số tháng/năm
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
-    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
-);
-GO
-
--- ========================================
--- Bảng Cards
--- ========================================
-CREATE TABLE Cards (
-    card_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('cardid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_card AS VARCHAR(6)), 6)),  
-    card_qr NVARCHAR(255) NOT NULL UNIQUE,      -- Chuỗi QR (unique)
-    vehicle_id INT NULL,                    -- Gắn với 1 xe
-    status NVARCHAR(20) CHECK (status IN ('active','inactive','lost')) DEFAULT 'inactive',
-    -- active (có người sử dụng), inactive (chưa có người sử dụng), lost (mất thẻ, admin phải tự cập nhật)
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id),
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id)
 );
 GO
 
 -- ========================================
--- Bảng ParkingRecords
+-- Cards
+-- ========================================
+CREATE TABLE Cards (
+    card_id VARCHAR(20) PRIMARY KEY 
+        DEFAULT ('CARD' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_card AS VARCHAR(6)), 6)),  
+    card_qr NVARCHAR(255) NOT NULL UNIQUE,
+    vehicle_id VARCHAR(20) NULL,
+    status NVARCHAR(20) CHECK (status IN ('active','inactive','lost')) DEFAULT 'inactive',
+    FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id)
+);
+GO
+
+-- ========================================
+-- ParkingRecords
 -- ========================================
 CREATE TABLE ParkingRecords (
     record_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('recid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_record AS VARCHAR(6)), 6)),
-    card_id INT NOT NULL,
-    slot_id INT NOT NULL,
-    vehicle_id INT NOT NULL,
+        DEFAULT ('RECD' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_record AS VARCHAR(6)), 6)),
+    card_id VARCHAR(20) NOT NULL,
+    slot_id VARCHAR(20) NOT NULL,
+    vehicle_id VARCHAR(20) NOT NULL,
     check_in_time DATETIME NOT NULL,
     check_out_time DATETIME NULL,
     hours INT NULL,
@@ -117,16 +117,15 @@ CREATE TABLE ParkingRecords (
 GO
 
 -- ========================================
--- Bảng Invoices
+-- Invoices
 -- ========================================
 CREATE TABLE Invoices (
     invoice_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('invid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_invoice AS VARCHAR(6)), 6)),
-    record_id INT NOT NULL,
+        DEFAULT ('INVC' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_invoice AS VARCHAR(6)), 6)),
+    record_id VARCHAR(20) NOT NULL,
     amount DECIMAL(18,2) NOT NULL,
     method NVARCHAR(20) NULL,
     payment_date DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (record_id) REFERENCES ParkingRecords(record_id)
 );
 GO
-
