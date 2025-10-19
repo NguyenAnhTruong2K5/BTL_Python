@@ -37,12 +37,12 @@ GO
 CREATE TABLE Vehicle (
     vehicle_id VARCHAR(20) PRIMARY KEY 
         DEFAULT ('vehid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_vehicle AS VARCHAR(6)), 6)),
-    customer_id INT NOT NULL,
+    customer_id VARCHAR(20) NOT NULL,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
     plate_number NVARCHAR(20) UNIQUE,
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
 );
-GO
+
 
 -- ========================================
 -- Bảng ParkingSlots
