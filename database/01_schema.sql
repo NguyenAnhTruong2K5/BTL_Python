@@ -62,7 +62,7 @@ GO
 CREATE TABLE Pricing (
     pricing_id VARCHAR(20) PRIMARY KEY,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
-    term NVARCHAR(20) NOT NULL CHECK(type IN ('hour','month', 'year')),
+    term NVARCHAR(10) NOT NULL CHECK(type IN ('hourly','monthly')),
     rate DECIMAL(18,2) NOT NULL
 );
 GO
@@ -76,7 +76,7 @@ CREATE TABLE Contracts (
     customer_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NULL,              -- sẽ được tự động tính: start_date + thời gian hợp đồng (bao tháng, bao năm)
-    term NVARCHAR(10) CHECK (term IN ('month','year')) NOT NULL,    -- loại thời hạn (tháng/năm)
+    term NVARCHAR(10) CHECK (term IN ('monthly','yearly')) NOT NULL,    -- loại thời hạn (tháng/năm)
     duration INT NOT NULL,     -- số tháng hoặc năm
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
