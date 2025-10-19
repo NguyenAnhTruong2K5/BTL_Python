@@ -44,7 +44,7 @@ BEGIN
 
     DECLARE @rate DECIMAL(18,2) = (
         SELECT TOP 1 rate FROM Pricing
-        WHERE vehicle_type = @veh_type AND type='hourly'
+        WHERE vehicle_type = @veh_type AND term='hourly'
     );
 
     DECLARE @fee DECIMAL(18,2) = @hours_chargeable * ISNULL(@rate,0);
