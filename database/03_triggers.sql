@@ -48,9 +48,9 @@ BEGIN
     IF EXISTS (SELECT 1 FROM #tmpCheckout)
     BEGIN
         DECLARE 
-            @rid INT,
-            @veh_id INT,
-            @cid INT,
+            @rid VARCHAR(20),
+            @veh_id VARCHAR(20),
+            @cid VARCHAR(20),
             @fee DECIMAL(18,2),
             @hours_total INT,
             @card_status NVARCHAR(20);
