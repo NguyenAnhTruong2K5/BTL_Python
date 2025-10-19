@@ -6,12 +6,25 @@ GO
 
 USE ParkingManagement;
 GO
+    
+-- ========================================
+-- Tạo SEQUENCE cho các bảng có mã tự tăng định dạng
+-- ========================================
+CREATE SEQUENCE seq_customer START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_vehicle START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_slot START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_contract START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_card START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_record START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_invoice START WITH 1 INCREMENT BY 1;
+GO
 
 -- ========================================
 -- Bảng Customers
 -- ========================================
 CREATE TABLE Customers (
-    customer_id INT IDENTITY(1,1) PRIMARY KEY,
+    customer_id VARCHAR(20) PRIMARY KEY 
+        DEFAULT ('cusid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_customer AS VARCHAR(6)), 6)),
     name NVARCHAR(100),
     phone_number NVARCHAR(20),
     email NVARCHAR(100)
@@ -22,7 +35,8 @@ GO
 -- Bảng Vehicle
 -- ========================================
 CREATE TABLE Vehicle (
-    vehicle_id INT IDENTITY(1,1) PRIMARY KEY,
+    vehicle_id VARCHAR(20) PRIMARY KEY 
+        DEFAULT ('vehid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_vehicle AS VARCHAR(6)), 6)),
     customer_id INT NOT NULL,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
     plate_number NVARCHAR(20) UNIQUE,
@@ -34,7 +48,8 @@ GO
 -- Bảng ParkingSlots
 -- ========================================
 CREATE TABLE ParkingSlots (
-    slot_id INT IDENTITY(1,1) PRIMARY KEY,
+    slot_id VARCHAR(20) PRIMARY KEY 
+        DEFAULT ('slotid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_slot AS VARCHAR(6)), 6)),
     slot_name NVARCHAR(50) NOT NULL,
     capacity INT NOT NULL,
     slots INT NOT NULL
@@ -45,7 +60,7 @@ GO
 -- Bảng Pricing
 -- ========================================
 CREATE TABLE Pricing (
-    pricing_id INT IDENTITY(1,1) PRIMARY KEY,
+    pricing_id VARCHAR(20) PRIMARY KEY,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
     type NVARCHAR(20) NOT NULL CHECK(type IN ('hourly','monthly')),
     rate DECIMAL(18,2) NOT NULL
@@ -73,7 +88,8 @@ GO
 -- Bảng Cards
 -- ========================================
 CREATE TABLE Cards (
-    card_id INT IDENTITY(1,1) PRIMARY KEY,      
+    card_id VARCHAR(20) PRIMARY KEY 
+        DEFAULT ('cardid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_card AS VARCHAR(6)), 6)),  
     card_qr NVARCHAR(255) NOT NULL UNIQUE,      -- Chuỗi QR (unique)
     vehicle_id INT NULL,                    -- Gắn với 1 xe
     status NVARCHAR(20) CHECK (status IN ('active','inactive','lost')) DEFAULT 'inactive',
@@ -86,7 +102,8 @@ GO
 -- Bảng ParkingRecords
 -- ========================================
 CREATE TABLE ParkingRecords (
-    record_id INT IDENTITY(1,1) PRIMARY KEY,
+    record_id VARCHAR(20) PRIMARY KEY 
+        DEFAULT ('recid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_record AS VARCHAR(6)), 6)),
     card_id INT NOT NULL,
     slot_id INT NOT NULL,
     vehicle_id INT NOT NULL,
@@ -104,7 +121,8 @@ GO
 -- Bảng Invoices
 -- ========================================
 CREATE TABLE Invoices (
-    invoice_id INT IDENTITY(1,1) PRIMARY KEY,
+    invoice_id VARCHAR(20) PRIMARY KEY 
+        DEFAULT ('invid' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_invoice AS VARCHAR(6)), 6)),
     record_id INT NOT NULL,
     amount DECIMAL(18,2) NOT NULL,
     method NVARCHAR(20) NULL,
