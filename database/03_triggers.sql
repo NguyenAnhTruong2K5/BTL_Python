@@ -119,14 +119,10 @@ BEGIN
     UPDATE c
     SET end_date = 
         CASE 
-            WHEN i.duration_type = 'month' 
-                THEN DATEADD(MONTH, i.duration_value, i.start_date)
-            WHEN i.duration_type = 'year' 
-                THEN DATEADD(YEAR, i.duration_value, i.start_date)
+            WHEN i.term = 'monthly' THEN DATEADD(MONTH, i.duration, i.start_date)
+            WHEN i.term = 'yearly' THEN DATEADD(YEAR, i.duration, i.start_date)
         END
     FROM Contracts c
     JOIN inserted i ON c.vehicle_id = i.vehicle_id;
 END;
 GO
-
-
