@@ -106,5 +106,27 @@ BEGIN
 END;
 GO
 
+-- ========================================
+-- Trigger tự động tính end_date khi thêm mới hợp đồng
+-- ========================================
+CREATE TRIGGER trg_CalcEndDate_OnInsertContract
+ON Contracts
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE c
+    SET end_date = 
+        CASE 
+            WHEN i.duration_type = 'month' 
+                THEN DATEADD(MONTH, i.duration_value, i.start_date)
+            WHEN i.duration_type = 'year' 
+                THEN DATEADD(YEAR, i.duration_value, i.start_date)
+        END
+    FROM Contracts c
+    JOIN inserted i ON c.vehicle_id = i.vehicle_id;
+END;
+GO
 
 
