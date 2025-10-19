@@ -76,7 +76,7 @@ CREATE TABLE Contracts (
     customer_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NULL,              -- sẽ được tự động tính: start_date + thời gian hợp đồng (bao tháng, bao năm)
-    term NVARCHAR(10) CHECK (duration_type IN ('month','year')) NOT NULL,    -- loại thời hạn (tháng/năm)
+    term NVARCHAR(10) CHECK (term IN ('month','year')) NOT NULL,    -- loại thời hạn (tháng/năm)
     duration INT NOT NULL,     -- số tháng hoặc năm
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
