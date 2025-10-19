@@ -2,7 +2,7 @@
 -- Stored Procedure tính fee
 -- ========================================
 CREATE PROCEDURE sp_CalcFeeForRecord
-    @record_id INT,
+    @record_id VARCHAR(20),
     @out_fee DECIMAL(18,2) OUTPUT,
     @out_hours_total INT OUTPUT
 AS
@@ -62,7 +62,7 @@ GO
 -- Stored Procedure tạo invoice
 -- ========================================
 CREATE PROCEDURE sp_CreateInvoice
-    @record_id INT,
+    @record_id VARCHAR(20),
     @amount DECIMAL(18,2),
     @method NVARCHAR(20) = 'cash'
 AS
