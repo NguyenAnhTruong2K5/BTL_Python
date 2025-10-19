@@ -62,7 +62,7 @@ GO
 CREATE TABLE Pricing (
     pricing_id VARCHAR(20) PRIMARY KEY,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
-    type NVARCHAR(20) NOT NULL CHECK(type IN ('hourly','monthly')),
+    term NVARCHAR(20) NOT NULL CHECK(type IN ('hour','month', 'year')),
     rate DECIMAL(18,2) NOT NULL
 );
 GO
