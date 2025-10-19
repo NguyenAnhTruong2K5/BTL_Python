@@ -76,3 +76,11 @@ BEGIN
 END;
 GO
 
+-- Stored Procedure xóa hợp đồng khỏi csdl mỗi khi hết hạn
+CREATE OR ALTER PROCEDURE sp_RemoveExpiredContracts
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DELETE FROM Contracts WHERE end_date < CAST(GETDATE() AS DATE);
+END;
+GO
