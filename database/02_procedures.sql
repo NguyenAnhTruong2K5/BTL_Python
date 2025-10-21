@@ -9,7 +9,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @in_dt DATETIME, @out_dt DATETIME, @veh_id INT, @veh_type NVARCHAR(20);
+    DECLARE @in_dt DATETIME, @out_dt DATETIME, @veh_id VARCHAR(20), @veh_type NVARCHAR(20);
     DECLARE @contract_end DATETIME = NULL;
 
     SELECT @in_dt = pr.check_in_time, @out_dt = pr.check_out_time, @veh_id = pr.vehicle_id
