@@ -22,7 +22,7 @@ GO
 -- ========================================
 -- Customers
 -- ========================================
-CREATE TABLE Customers (
+CREATE TABLE Customer (
     customer_id VARCHAR(20) PRIMARY KEY 
         DEFAULT ('CUST' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_customer AS VARCHAR(6)), 6)),
     name NVARCHAR(100),
@@ -47,7 +47,7 @@ GO
 -- ========================================
 -- ParkingSlots
 -- ========================================
-CREATE TABLE ParkingSlots (
+CREATE TABLE ParkingSlot (
     slot_id VARCHAR(20) PRIMARY KEY 
         DEFAULT ('SLOT' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_slot AS VARCHAR(6)), 6)),
     slot_name NVARCHAR(50) NOT NULL,
@@ -70,7 +70,7 @@ GO
 -- ========================================
 -- Contracts
 -- ========================================
-CREATE TABLE Contracts (
+CREATE TABLE Contract (
     vehicle_id VARCHAR(20) PRIMARY KEY,      -- Vehicle là khóa chính (1 xe 1 hợp đồng)
     pricing_id VARCHAR(20) NOT NULL,
     customer_id VARCHAR(20) NOT NULL,
@@ -87,7 +87,7 @@ GO
 -- ========================================
 -- Cards
 -- ========================================
-CREATE TABLE Cards (
+CREATE TABLE Card (
     card_id VARCHAR(20) PRIMARY KEY 
         DEFAULT ('CARD' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_card AS VARCHAR(6)), 6)),  
     card_qr NVARCHAR(255) NOT NULL UNIQUE,
@@ -100,9 +100,9 @@ GO
 -- ========================================
 -- ParkingRecords
 -- ========================================
-CREATE TABLE ParkingRecords (
+CREATE TABLE ParkingRecord (
     record_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('RECD' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_record AS VARCHAR(6)), 6)),
+        DEFAULT ('RECO' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_record AS VARCHAR(6)), 6)),
     card_id VARCHAR(20) NOT NULL,
     slot_id VARCHAR(20) NOT NULL,
     vehicle_id VARCHAR(20) NOT NULL,
@@ -119,9 +119,9 @@ GO
 -- ========================================
 -- Invoices
 -- ========================================
-CREATE TABLE Invoices (
+CREATE TABLE Invoice (
     invoice_id VARCHAR(20) PRIMARY KEY 
-        DEFAULT ('INVC' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_invoice AS VARCHAR(6)), 6)),
+        DEFAULT ('INVO' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_invoice AS VARCHAR(6)), 6)),
     record_id VARCHAR(20) NOT NULL,
     amount DECIMAL(18,2) NOT NULL,
     method NVARCHAR(20) NULL,
