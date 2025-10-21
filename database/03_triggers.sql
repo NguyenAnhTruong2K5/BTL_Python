@@ -16,7 +16,7 @@ BEGIN
     UPDATE c
     SET c.status = 'active',
         c.vehicle_id = i.vehicle_id
-    FROM Cards c
+    FROM Card c
     JOIN inserted i ON c.card_id = i.card_id;
 END;
 GO
