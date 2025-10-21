@@ -86,8 +86,8 @@ BEGIN
             -- Tăng lại slot
             UPDATE ps
             SET ps.slots = ps.slots + 1
-            FROM ParkingSlots ps
-            JOIN ParkingRecords pr ON ps.slot_id = pr.slot_id
+            FROM ParkingSlot ps
+            JOIN ParkingRecord pr ON ps.slot_id = pr.slot_id
             WHERE pr.record_id = @rid;
 
             -- Cập nhật Card thành inactive và xóa dữ liệu xe
