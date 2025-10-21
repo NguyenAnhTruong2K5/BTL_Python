@@ -40,7 +40,7 @@ CREATE TABLE Vehicle (
     customer_id VARCHAR(20) NOT NULL,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
     plate_number NVARCHAR(20) UNIQUE,
-    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id)
 );
 GO
 
@@ -62,7 +62,7 @@ GO
 CREATE TABLE Pricing (
     pricing_id VARCHAR(20) PRIMARY KEY,
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
-    term NVARCHAR(10) NOT NULL CHECK(term IN ('hourly','monthly')),
+    term NVARCHAR(10) NOT NULL CHECK(term IN ('hourly','monthly', 'yearly')),
     rate DECIMAL(18,2) NOT NULL
 );
 GO
@@ -79,7 +79,7 @@ CREATE TABLE Contract (
     term NVARCHAR(10) CHECK (term IN ('monthly','yearly')) NOT NULL,    -- thời hạn
     duration INT NOT NULL,   -- số tháng/năm
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
-    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id),
+    FOREIGN KEY (customer_id) REFERENCES Customer(customer_id),
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id)
 );
 GO
@@ -110,9 +110,9 @@ CREATE TABLE ParkingRecord (
     check_out_time DATETIME NULL,
     hours INT NULL,
     fee DECIMAL(18,2) NULL,
-    FOREIGN KEY (slot_id) REFERENCES ParkingSlots(slot_id),
+    FOREIGN KEY (slot_id) REFERENCES ParkingSlot(slot_id),
     FOREIGN KEY (vehicle_id) REFERENCES Vehicle(vehicle_id),
-    FOREIGN KEY (card_id) REFERENCES Cards(card_id)
+    FOREIGN KEY (card_id) REFERENCES Card(card_id)
 );
 GO
 
@@ -126,6 +126,6 @@ CREATE TABLE Invoice (
     amount DECIMAL(18,2) NOT NULL,
     method NVARCHAR(20) NULL,
     payment_date DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (record_id) REFERENCES ParkingRecords(record_id)
+    FOREIGN KEY (record_id) REFERENCES ParkingRecord(record_id)
 );
 GO
