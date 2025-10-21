@@ -1,5 +1,5 @@
 CREATE TRIGGER trg_OnInsert_ParkingRecord
-ON ParkingRecords
+ON ParkingRecord
 AFTER INSERT
 AS
 BEGIN
@@ -8,7 +8,7 @@ BEGIN
     -- Giảm số slot trống
     UPDATE ps
     SET ps.slots = ps.slots - 1
-    FROM ParkingSlots ps
+    FROM ParkingSlot ps
     JOIN inserted i ON ps.slot_id = i.slot_id
     WHERE i.check_in_time IS NOT NULL AND ps.slots > 0;
 
@@ -27,7 +27,7 @@ GO
 -- Cập nhật Card thành inactive khi check out
 -- ========================================
 CREATE TRIGGER trg_OnUpdate_ParkingRecord
-ON ParkingRecords
+ON ParkingRecord
 AFTER UPDATE
 AS
 BEGIN
@@ -91,7 +91,7 @@ BEGIN
             WHERE pr.record_id = @rid;
 
             -- Cập nhật Card thành inactive và xóa dữ liệu xe
-            UPDATE Cards
+            UPDATE Card
             SET status = 'inactive', vehicle_id = NULL
             WHERE card_id = @cid;
 
@@ -110,7 +110,7 @@ GO
 -- Trigger tự động tính end_date khi thêm mới hợp đồng
 -- ========================================
 CREATE TRIGGER trg_CalcEndDate_OnInsertContract
-ON Contracts
+ON Contract
 AFTER INSERT
 AS
 BEGIN
@@ -122,7 +122,7 @@ BEGIN
             WHEN i.term = 'monthly' THEN DATEADD(MONTH, i.duration, i.start_date)
             WHEN i.term = 'yearly' THEN DATEADD(YEAR, i.duration, i.start_date)
         END
-    FROM Contracts c
+    FROM Contract c
     JOIN inserted i ON c.vehicle_id = i.vehicle_id;
 END;
 GO
