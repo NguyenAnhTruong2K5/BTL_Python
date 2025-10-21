@@ -13,7 +13,7 @@ BEGIN
     DECLARE @contract_end DATETIME = NULL;
 
     SELECT @in_dt = pr.check_in_time, @out_dt = pr.check_out_time, @veh_id = pr.vehicle_id
-    FROM ParkingRecords pr
+    FROM ParkingRecord pr
     WHERE pr.record_id = @record_id;
 
     IF @in_dt IS NULL OR @out_dt IS NULL
@@ -26,7 +26,7 @@ BEGIN
 
     -- Lấy hợp đồng active mới nhất
     SELECT TOP 1 @contract_end = DATEADD(SECOND, 86399, end_date)
-    FROM Contracts
+    FROM Contract
     WHERE vehicle_id = @veh_id AND end_date >= @in_dt
     ORDER BY end_date DESC;
 
@@ -49,7 +49,7 @@ BEGIN
 
     DECLARE @fee DECIMAL(18,2) = @hours_chargeable * ISNULL(@rate,0);
 
-    UPDATE ParkingRecords
+    UPDATE ParkingRecord
     SET hours = @hours_total, fee = @fee
     WHERE record_id = @record_id;
 
@@ -71,7 +71,7 @@ BEGIN
 
     IF @amount <= 0 RETURN;
 
-    INSERT INTO Invoices (record_id, amount, method, payment_date)
+    INSERT INTO Invoice (record_id, amount, method, payment_date)
     VALUES (@record_id, @amount, @method, GETDATE());
 END;
 GO
