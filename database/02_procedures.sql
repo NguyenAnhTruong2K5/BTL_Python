@@ -1,5 +1,5 @@
 -- ========================================
--- Stored Procedure tính fee
+-- Stored Procedure: Tính phí
 -- ========================================
 CREATE PROCEDURE sp_CalcFeeForRecord
     @record_id VARCHAR(20),
@@ -9,10 +9,10 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @in_dt DATETIME, @out_dt DATETIME, @veh_id VARCHAR(20), @veh_type NVARCHAR(20);
+    DECLARE @in_dt DATETIME, @out_dt DATETIME, @plate NVARCHAR(20), @veh_type NVARCHAR(20);
     DECLARE @contract_end DATETIME = NULL;
 
-    SELECT @in_dt = pr.check_in_time, @out_dt = pr.check_out_time, @veh_id = pr.vehicle_id
+    SELECT @in_dt = pr.check_in_time, @out_dt = pr.check_out_time, @plate = pr.plate_number
     FROM ParkingRecord pr
     WHERE pr.record_id = @record_id;
 
@@ -22,12 +22,12 @@ BEGIN
         RETURN;
     END
 
-    SELECT @veh_type = vehicle_type FROM Vehicle WHERE vehicle_id = @veh_id;
+    SELECT @veh_type = vehicle_type FROM Vehicle WHERE plate_number = @plate;
 
-    -- Lấy hợp đồng active mới nhất
+    -- Hợp đồng hiện tại
     SELECT TOP 1 @contract_end = DATEADD(SECOND, 86399, end_date)
     FROM Contract
-    WHERE vehicle_id = @veh_id AND end_date >= @in_dt
+    WHERE plate_number = @plate AND end_date >= @in_dt
     ORDER BY end_date DESC;
 
     DECLARE @charge_minutes INT;
@@ -59,7 +59,7 @@ END;
 GO
 
 -- ========================================
--- Stored Procedure tạo invoice
+-- Stored Procedure: Tạo hóa đơn
 -- ========================================
 CREATE PROCEDURE sp_CreateInvoice
     @record_id VARCHAR(20),
@@ -68,11 +68,8 @@ CREATE PROCEDURE sp_CreateInvoice
 AS
 BEGIN
     SET NOCOUNT ON;
-
     IF @amount <= 0 RETURN;
-
     INSERT INTO Invoice (record_id, amount, method, payment_date)
     VALUES (@record_id, @amount, @method, GETDATE());
 END;
 GO
-
