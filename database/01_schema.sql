@@ -17,8 +17,9 @@ GO
 -- Customers
 -- ========================================
 CREATE TABLE Customer (
-    phone_number NVARCHAR(20) PRIMARY KEY,
+    cccd NVARCHAR(20) PRIMARY KEY,                  
     name NVARCHAR(100) NOT NULL,
+    phone_number NVARCHAR(20) NOT NULL UNIQUE,      
     email NVARCHAR(100)
 );
 GO
@@ -28,9 +29,9 @@ GO
 -- ========================================
 CREATE TABLE Vehicle (
     plate_number NVARCHAR(20) PRIMARY KEY,
-    phone_number NVARCHAR(20) NOT NULL,
+    cccd NVARCHAR(20) NOT NULL,                  
     vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
-    FOREIGN KEY (phone_number) REFERENCES Customer(phone_number)
+    FOREIGN KEY (cccd) REFERENCES Customer(cccd)
 );
 GO
 
@@ -61,8 +62,8 @@ GO
 -- Contracts
 -- ========================================
 CREATE TABLE Contract (
-    plate_number NVARCHAR(20) PRIMARY KEY,       -- mỗi xe chỉ có 1 hợp đồng tại 1 thời điểm
-    phone_number NVARCHAR(20) NOT NULL,
+    plate_number NVARCHAR(20) PRIMARY KEY,          
+    cccd NVARCHAR(20) NOT NULL,                     
     pricing_id VARCHAR(20) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NULL,
@@ -70,7 +71,7 @@ CREATE TABLE Contract (
     duration INT NOT NULL,
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
     FOREIGN KEY (plate_number) REFERENCES Vehicle(plate_number),
-    FOREIGN KEY (phone_number) REFERENCES Customer(phone_number)
+    FOREIGN KEY (cccd) REFERENCES Customer(cccd)
 );
 GO
 
