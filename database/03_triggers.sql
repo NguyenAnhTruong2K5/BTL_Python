@@ -103,27 +103,32 @@ END;
 GO
 
 -- ========================================
--- Trigger: Khi tạo hợp đồng -> Tự tính ngày kết thúc
+-- Trigger: Khi tạo hoặc cập nhật hợp đồng
+--          -> Tự động cập nhật start_date & end_date
 -- ========================================
-CREATE TRIGGER trg_CalcEndDate_OnInsertContract
+CREATE TRIGGER trg_AutoUpdate_ContractDates
 ON Contract
-AFTER INSERT
+AFTER INSERT, UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Đặt start_date tại thời điểm tạo hóa đơn (hiện tại)
-    UPDATE c
-    SET c.start_date = GETDATE()
-    FROM Contract c
-    JOIN inserted i ON c.plate_number = i.plate_number;
 
-    -- Sau đó, tự động tính end_date dựa trên term (monthly/yearly) và duration (bao nhiêu term)
+    -- Cập nhật start_date nếu hợp đồng mới (INSERT)
     UPDATE c
-    SET end_date = 
+    SET c.start_date = ISNULL(i.start_date, GETDATE())
+    FROM Contract c
+    JOIN inserted i ON c.plate_number = i.plate_number
+    LEFT JOIN deleted d ON c.plate_number = d.plate_number
+    WHERE d.plate_number IS NULL;  -- nghĩa là bản ghi này mới được INSERT
+
+    -- Cập nhật end_date cho cả INSERT và UPDATE
+    UPDATE c
+    SET c.end_date = 
         CASE 
-            WHEN i.term = 'monthly' THEN DATEADD(MONTH, i.duration, i.start_date)
-            WHEN i.term = 'yearly' THEN DATEADD(YEAR, i.duration, i.start_date)
+            WHEN i.term = 'monthly' THEN DATEADD(MONTH, i.duration, c.start_date)
+            WHEN i.term = 'yearly'  THEN DATEADD(YEAR, i.duration, c.start_date)
+            ELSE c.end_date
         END
     FROM Contract c
     JOIN inserted i ON c.plate_number = i.plate_number;
