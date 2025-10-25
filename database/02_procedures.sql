@@ -22,7 +22,12 @@ BEGIN
         RETURN;
     END
 
-    SELECT @veh_type = vehicle_type FROM Vehicle WHERE plate_number = @plate;
+    SELECT TOP 1 @veh_type = vehicle_type
+    FROM Contract
+    WHERE plate_number = @plate;
+    
+    IF @veh_type IS NULL
+        SELECT @veh_type = vehicle_type FROM Vehicle WHERE plate_number = @plate;
 
     -- Hợp đồng hiện tại
     SELECT TOP 1 @contract_end = DATEADD(SECOND, 86399, end_date)
