@@ -8,17 +8,51 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Giảm số slot trống
+        -- Giảm số chỗ trống còn lại
+    -- Kiểm tra xe có hợp đồng còn hiệu lực hay không
+    IF EXISTS (
+        SELECT 1 FROM inserted i
+        JOIN Contract c ON i.plate_number = c.plate_number
+        WHERE c.end_date >= GETDATE()
+    )
+    BEGIN
+        -- Nếu xe có hợp đồng, chỉ được gửi ở bãi A
+        IF EXISTS (
+            SELECT 1 FROM inserted i
+            JOIN ParkingSlot ps ON ps.slot_id = i.slot_id
+            WHERE ps.slot_name <> 'A'
+        )
+        BEGIN
+            RAISERROR('Xe có hợp đồng chỉ được gửi ở bãi A.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+    END
+    ELSE
+    BEGIN
+        -- Xe không có hợp đồng chỉ được gửi ở bãi B
+        IF EXISTS (
+            SELECT 1 FROM inserted i
+            JOIN ParkingSlot ps ON ps.slot_id = i.slot_id
+            WHERE ps.slot_name <> 'B'
+        )
+        BEGIN
+            RAISERROR('Xe không có hợp đồng chỉ được gửi ở bãi B.', 16, 1);
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+    END
+
+    -- Giảm slot trống
     UPDATE ps
     SET ps.slots = ps.slots - 1
     FROM ParkingSlot ps
     JOIN inserted i ON ps.slot_id = i.slot_id
-    WHERE i.check_in_time IS NOT NULL AND ps.slots > 0;
+    WHERE ps.slots > 0;
 
-    -- Cập nhật Card thành active + gắn vehicle (thông tin xe)
+    -- Kích hoạt thẻ
     UPDATE c
-    SET c.status = 'active',
-        c.plate_number = i.plate_number
+    SET c.status = 'active', c.plate_number = i.plate_number
     FROM Card c
     JOIN inserted i ON c.card_id = i.card_id;
 END;
