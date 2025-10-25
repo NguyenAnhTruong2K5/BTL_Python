@@ -19,6 +19,7 @@ GO
 -- Bảng ParkingSlots: 3 bãi A, B, C mỗi bãi 100 chỗ
 INSERT INTO ParkingSlot (slot_name, capacity, slots)
 VALUES
-('A', 100, 100)
+('A', 100, 100),
+('B', 100, 100)
 GO
 
