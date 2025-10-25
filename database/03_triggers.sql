@@ -103,7 +103,7 @@ END;
 GO
 
 -- ========================================
--- Trigger: Tự tính end_date khi tạo hợp đồng
+-- Trigger: Khi tạo hợp đồng -> Tự tính ngày kết thúc
 -- ========================================
 CREATE TRIGGER trg_CalcEndDate_OnInsertContract
 ON Contract
@@ -111,6 +111,14 @@ AFTER INSERT
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    -- Đặt start_date tại thời điểm tạo hóa đơn (hiện tại)
+    UPDATE c
+    SET c.start_date = GETDATE()
+    FROM Contract c
+    JOIN inserted i ON c.plate_number = i.plate_number;
+
+    -- Sau đó, tự động tính end_date dựa trên term (monthly/yearly) và duration (bao nhiêu term)
     UPDATE c
     SET end_date = 
         CASE 
