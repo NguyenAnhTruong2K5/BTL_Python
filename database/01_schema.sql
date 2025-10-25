@@ -62,13 +62,14 @@ GO
 -- Contracts
 -- ========================================
 CREATE TABLE Contract (
-    plate_number NVARCHAR(20) PRIMARY KEY,          
-    cccd NVARCHAR(20) NOT NULL,                     
+    plate_number NVARCHAR(20) PRIMARY KEY,           -- mỗi xe chỉ có 1 hợp đồng tại 1 thời điểm
+    cccd NVARCHAR(20) NOT NULL,                      -- chủ xe
     pricing_id VARCHAR(20) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NULL,
     term NVARCHAR(10) CHECK (term IN ('monthly','yearly')) NOT NULL,
     duration INT NOT NULL,
+    vehicle_type NVARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')), 
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id),
     FOREIGN KEY (plate_number) REFERENCES Vehicle(plate_number),
     FOREIGN KEY (cccd) REFERENCES Customer(cccd)
