@@ -150,9 +150,6 @@ GO
 
 -- ========================================
 -- Trigger: Khi tạo hoặc chỉnh sửa hợp đồng
--- Tác dụng:
---  - Tự động đặt start_date = thời điểm hiện tại
---  - Tự động tính lại end_date dựa vào term + duration
 -- ========================================
 CREATE TRIGGER trg_AutoUpdate_ContractDates
 ON Contract
@@ -161,13 +158,13 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Cập nhật start_date = thời điểm hiện tại mỗi khi thêm hoặc sửa
+    -- Cập nhật start_date = thời điểm hiện tại
     UPDATE c
     SET c.start_date = GETDATE()
     FROM Contract c
-    JOIN inserted i ON c.plate_number = i.plate_number;
+    JOIN inserted i ON c.contract_id = i.contract_id;
 
-    -- Tự động tính lại end_date dựa vào term + duration (từ thời điểm hiện tại)
+    -- Tính lại end_date dựa vào term + duration
     UPDATE c
     SET c.end_date = 
         CASE 
@@ -175,6 +172,12 @@ BEGIN
             WHEN i.term = 'yearly'  THEN DATEADD(YEAR, i.duration, GETDATE())
         END
     FROM Contract c
-    JOIN inserted i ON c.plate_number = i.plate_number;
+    JOIN inserted i ON c.contract_id = i.contract_id;
+
+    -- Giảm slot trống ở bãi A khi tạo hợp đồng
+    UPDATE ps
+    SET ps.slots = ps.slots - 1
+    FROM ParkingSlot ps
+    WHERE ps.slot_name = 'A' AND ps.slots > 0;
 END;
 GO
