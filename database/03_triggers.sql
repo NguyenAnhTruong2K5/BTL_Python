@@ -1,71 +1,10 @@
 -- ========================================
--- Trigger: Giảm slot, kích hoạt thẻ khi check-in
--- ========================================
-CREATE TRIGGER trg_OnInsert_ParkingRecord
-ON ParkingRecord
-AFTER INSERT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    -- Kiểm tra xe có hợp đồng còn hiệu lực hay không
-    IF EXISTS (
-        SELECT 1 
-        FROM inserted i
-        JOIN Contract c ON i.plate_number = c.plate_number
-        WHERE c.end_date >= GETDATE()
-    )
-    BEGIN
-        -- Nếu xe có hợp đồng, chỉ được gửi ở bãi A
-        IF EXISTS (
-            SELECT 1 
-            FROM inserted i
-            JOIN ParkingSlot ps ON ps.slot_id = i.slot_id
-            WHERE ps.slot_name <> 'A'
-        )
-        BEGIN
-            RAISERROR('Xe có hợp đồng chỉ được gửi ở bãi A.', 16, 1);
-            ROLLBACK TRANSACTION;
-            RETURN;
-        END
-
-        -- Xe có hợp đồng KHÔNG giảm slot (do đã trừ khi tạo hợp đồng)
-        PRINT 'Xe có hợp đồng, không giảm slot bãi A.';
-    END
-    ELSE
-    BEGIN
-        -- Xe không có hợp đồng chỉ được gửi ở bãi B
-        IF EXISTS (
-            SELECT 1 
-            FROM inserted i
-            JOIN ParkingSlot ps ON ps.slot_id = i.slot_id
-            WHERE ps.slot_name <> 'B'
-        )
-        BEGIN
-            RAISERROR('Xe không có hợp đồng chỉ được gửi ở bãi B.', 16, 1);
-            ROLLBACK TRANSACTION;
-            RETURN;
-        END
-
-        -- Xe không có hợp đồng -> giảm slot bãi B
-        UPDATE ps
-        SET ps.slots = ps.slots - 1
-        FROM ParkingSlot ps
-        JOIN inserted i ON ps.slot_id = i.slot_id
-        WHERE ps.slot_name = 'B' AND ps.slots > 0;
-    END
-
-    -- Kích hoạt thẻ
-    UPDATE c
-    SET c.status = 'active', c.plate_number = i.plate_number
-    FROM Card c
-    JOIN inserted i ON c.card_id = i.card_id;
-END;
-GO
-
-
--- ========================================
--- Trigger: Check-out -> tính phí, tạo hóa đơn, tăng slot, reset thẻ
+-- Trigger: trg_OnUpdate_ParkingRecord
+--  - Khi update ParkingRecord và check_out_time từ NULL -> NOT NULL (checkout):
+--      * Gọi sp_CalcFeeForRecord để tính fee
+--      * Nếu fee > 0 -> tạo bản ghi parking_invoice
+--      * Tăng lại slots (bãi có slots tăng 1)
+--      * Reset thẻ (status = 'inactive', plate_number = NULL)
 -- ========================================
 CREATE TRIGGER trg_OnUpdate_ParkingRecord
 ON ParkingRecord
@@ -75,71 +14,61 @@ BEGIN
     SET NOCOUNT ON;
 
     ;WITH CheckoutRecords AS (
-        SELECT 
-            i.record_id, i.plate_number, i.card_id, pr.slot_id
+        SELECT i.record_id, i.plate_number, i.card_id
         FROM inserted i
         JOIN deleted d ON i.record_id = d.record_id
-        JOIN ParkingRecord pr ON pr.record_id = i.record_id
         WHERE i.check_out_time IS NOT NULL AND d.check_out_time IS NULL
     )
     SELECT * INTO #tmpCheckout FROM CheckoutRecords;
 
     IF EXISTS (SELECT 1 FROM #tmpCheckout)
     BEGIN
-        DECLARE 
-            @rid VARCHAR(20),
-            @plate NVARCHAR(20),
-            @cid VARCHAR(20),
-            @sid INT,
-            @fee DECIMAL(18,2),
-            @hours_total INT,
-            @card_status NVARCHAR(20),
-            @slot_name NVARCHAR(50);
+        DECLARE @rid VARCHAR(20), @plate NVARCHAR(20), @cid VARCHAR(20);
+        DECLARE @fee DECIMAL(18,2);
+        DECLARE @pricing_id VARCHAR(50);
 
-        DECLARE cur CURSOR FAST_FORWARD FOR
-            SELECT record_id, plate_number, card_id, slot_id FROM #tmpCheckout;
+        DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+            SELECT record_id, plate_number, card_id FROM #tmpCheckout;
 
         OPEN cur;
-        FETCH NEXT FROM cur INTO @rid, @plate, @cid, @sid;
-
+        FETCH NEXT FROM cur INTO @rid, @plate, @cid;
         WHILE @@FETCH_STATUS = 0
         BEGIN
-            SELECT @card_status = status FROM Card WHERE card_id = @cid;
-            IF @card_status <> 'active'
+            -- Kiểm tra thẻ active
+            IF NOT EXISTS (SELECT 1 FROM Card WHERE card_id = @cid AND status = 'active')
             BEGIN
-                RAISERROR ('Không thể check-out: thẻ không active.', 16, 1);
+                RAISERROR('Không thể check-out: thẻ không active.', 16, 1);
                 ROLLBACK TRANSACTION;
                 RETURN;
             END
 
-            -- Lấy loại bãi
-            SELECT @slot_name = slot_name FROM ParkingSlot WHERE slot_id = @sid;
-
             -- Tính phí
-            EXEC sp_CalcFeeForRecord @record_id = @rid,
-                                     @out_fee = @fee OUTPUT,
-                                     @out_hours_total = @hours_total OUTPUT;
+            SET @fee = 0;
+            EXEC sp_CalcFeeForRecord @record_id = @rid, @out_fee = @fee OUTPUT;
 
+            -- Nếu có phí > 0 tạo parking_invoice
             IF @fee > 0
-                EXEC sp_CreateInvoice @rid, @fee, 'cash';
-
-            -- Chỉ bãi B mới tăng lại slot
-            IF @slot_name = 'B'
             BEGIN
-                UPDATE ps
-                SET ps.slots = ps.slots + 1
-                FROM ParkingSlot ps
-                WHERE ps.slot_id = @sid;
+                -- Lấy pricing_id theo vehicle_type đã lưu trong ParkingRecord (nếu muốn lưu loại áp dụng)
+                SELECT TOP 1 @pricing_id = p.pricing_id
+                FROM Pricing p
+                JOIN ParkingRecord pr ON pr.record_id = @rid
+                WHERE p.vehicle_type = pr.vehicle_type AND p.term = 'hourly';
+
+                EXEC sp_CreateParkingInvoice @record_id = @rid, @pricing_id = @pricing_id, @amount = @fee, @method = 'cash';
             END
 
-            -- Cập nhật thẻ thành inactive
+            -- Tăng lại slots 
+            UPDATE ParkingSlot SET slots = slots + 1;
+
+            -- Reset thẻ
             UPDATE Card
-            SET status = 'inactive', plate_number = NULL
+            SET status = 'inactive',
+                plate_number = NULL
             WHERE card_id = @cid;
 
-            FETCH NEXT FROM cur INTO @rid, @plate, @cid, @sid;
+            FETCH NEXT FROM cur INTO @rid, @plate, @cid;
         END
-
         CLOSE cur;
         DEALLOCATE cur;
     END
@@ -149,7 +78,11 @@ END;
 GO
 
 -- ========================================
--- Trigger: Khi tạo hoặc chỉnh sửa hợp đồng
+-- Trigger: trg_AutoUpdate_ContractDates
+--  - Khi INSERT hoặc UPDATE Contract:
+--      * Tự đặt start_date = NOW()
+--      * Tính end_date dựa trên term + duration (month/year)
+--      * (Không tự động giảm slots — theo yêu cầu: "không còn insert contract nữa" / slot không bị trừ khi tạo contract)
 -- ========================================
 CREATE TRIGGER trg_AutoUpdate_ContractDates
 ON Contract
@@ -158,26 +91,20 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Cập nhật start_date = thời điểm hiện tại
+    -- Đặt start_date = thời điểm hiện tại mỗi khi thêm hoặc sửa
     UPDATE c
-    SET c.start_date = GETDATE()
+    SET c.start_date = CAST(GETDATE() AS DATE)
     FROM Contract c
-    JOIN inserted i ON c.contract_id = i.contract_id;
+    JOIN inserted i ON c.plate_number = i.plate_number;
 
-    -- Tính lại end_date dựa vào term + duration
+    -- Tự tính end_date từ start_date (hiện tại là thời điểm GETDATE())
     UPDATE c
-    SET c.end_date = 
-        CASE 
-            WHEN i.term = 'monthly' THEN DATEADD(MONTH, i.duration, GETDATE())
-            WHEN i.term = 'yearly'  THEN DATEADD(YEAR, i.duration, GETDATE())
+    SET c.end_date =
+        CASE
+            WHEN i.term = 'monthly' THEN DATEADD(MONTH, i.duration, CAST(GETDATE() AS DATE))
+            WHEN i.term = 'yearly'  THEN DATEADD(YEAR, i.duration, CAST(GETDATE() AS DATE))
         END
     FROM Contract c
-    JOIN inserted i ON c.contract_id = i.contract_id;
-
-    -- Giảm slot trống ở bãi A khi tạo hợp đồng
-    UPDATE ps
-    SET ps.slots = ps.slots - 1
-    FROM ParkingSlot ps
-    WHERE ps.slot_name = 'A' AND ps.slots > 0;
+    JOIN inserted i ON c.plate_number = i.plate_number;
 END;
 GO
