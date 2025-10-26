@@ -16,10 +16,7 @@ VALUES
 ('6', 'car', 'yearly', 2000000); --2000k/năm
 GO
 
--- Bảng ParkingSlots: 3 bãi A, B, C mỗi bãi 100 chỗ
-INSERT INTO ParkingSlot (slot_name, capacity, slots)
-VALUES
-('A', 100, 100),
-('B', 100, 100)
+-- Khởi tạo duy nhất 1 dòng cho bãi A, 100 chỗ
+INSERT INTO ParkingSlot (capacity, slots) VALUES (100, 100);
 GO
 
