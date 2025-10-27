@@ -39,7 +39,7 @@ class SearchContractView(generics.ListAPIView):
     queryset = Contract.objects.all()
     serializer_class = ListContractSerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ["plate_number", "vehicle_type"]
+    search_fields = ["cccd__cccd", "plate_number", "vehicle_type"]
 
 
 class UpdateContractView(generics.RetrieveUpdateAPIView):
