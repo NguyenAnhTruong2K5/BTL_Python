@@ -18,7 +18,6 @@ urlpatterns = [
     # --- Contract URLs ---
 
     # Handles POST on /contracts/create/
-    path('contracts/create/', views.CreateContractView.as_view(), name='contract-create'),
 
     # Handles GET (list) on /contracts/
     path('contracts/', views.ListContractView.as_view(), name='contract-list'),
@@ -31,4 +30,8 @@ urlpatterns = [
 
     # Handles DELETE on /contracts/<pk>/delete/
     path('contracts/<str:pk>/delete/', views.DeleteContractView.as_view(), name='contract-delete'),
+    path('customers/<str:cccd>/contracts/create/',
+         views.CreateContractView.as_view(),
+         name='create-contract-for-customer'),
+    path('customers/<str:cccd>/contracts/list/', views.ListContractView.as_view(), name= 'contract-list'),
 ]
