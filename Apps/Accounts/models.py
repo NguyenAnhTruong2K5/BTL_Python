@@ -10,6 +10,7 @@ class Customer(models.Model):
 
 class Contract(models.Model):
     plate_number = models.CharField(max_length=20, primary_key= True)
+    status = models.CharField(max_length=10, default='valid')
     vehicle_type = models.CharField(max_length=100, null= False, blank= False)
     cccd = models.OneToOneField('Customer', on_delete=models.CASCADE, to_field= 'cccd', db_column= 'cccd')
     term = models.CharField(max_length=10, choices= [('monthly', 'Monthly'), ('yearly', 'Yearly')])
