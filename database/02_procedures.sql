@@ -34,10 +34,9 @@ BEGIN
     END
 
     -- Lấy hợp đồng (nếu có) cho plate và còn hiệu lực (end_date >= in_dt)
-    SELECT TOP 1 @contract_end = DATEADD(SECOND, 86399, end_date)
+    SELECT @contract_end = end_date
     FROM Contract
-    WHERE plate_number = @plate AND end_date >= @in_dt
-    ORDER BY end_date DESC;
+    WHERE plate_number = @plate AND end_date >= @in_dt;
 
     IF @contract_end IS NULL
     BEGIN
