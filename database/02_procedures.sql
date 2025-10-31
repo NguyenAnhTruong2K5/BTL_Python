@@ -15,7 +15,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @in_dt DATETIME, @out_dt DATETIME, @plate NVARCHAR(20), @veh_type NVARCHAR(20);
+    DECLARE @in_dt DATETIME, @out_dt DATETIME, @plate VARCHAR(20), @veh_type VARCHAR(20);
     DECLARE @contract_end DATETIME = NULL;
     DECLARE @charge_minutes INT;
     DECLARE @rate DECIMAL(18,2);
@@ -33,45 +33,31 @@ BEGIN
         RETURN;
     END
 
-    -- Lấy hợp đồng (nếu có) cho plate và còn hiệu lực (end_date >= in_dt)
     SELECT @contract_end = end_date
     FROM Contract
     WHERE plate_number = @plate AND end_date >= @in_dt;
 
     IF @contract_end IS NULL
     BEGIN
-        -- Không có hợp đồng -> tính toàn bộ thời gian giữa in/out
         SET @charge_minutes = DATEDIFF(MINUTE, @in_dt, @out_dt);
     END
     ELSE
     BEGIN
-        -- Có hợp đồng
         IF @out_dt <= @contract_end
-        BEGIN
-            SET @charge_minutes = 0; -- nằm trong hợp đồng hoàn toàn
-        END
+            SET @charge_minutes = 0;
         ELSE IF @in_dt >= @contract_end
-        BEGIN
-            -- Toàn bộ nằm sau khi hợp đồng hết hạn
             SET @charge_minutes = DATEDIFF(MINUTE, @in_dt, @out_dt);
-        END
         ELSE
-        BEGIN
-            -- Một phần trước hợp đồng kết thúc (miễn phí), phần sau tính tiền
             SET @charge_minutes = DATEDIFF(MINUTE, @contract_end, @out_dt);
-        END
     END
 
-    -- Làm tròn lên giờ
     DECLARE @hours_chargeable INT = CEILING(CAST(ISNULL(@charge_minutes,0) AS FLOAT) / 60.0);
 
-    -- Lấy đơn giá hourly theo vehicle_type (ưu tiên tìm hourly)
     SELECT TOP 1 @rate = rate FROM Pricing WHERE vehicle_type = @veh_type AND term = 'hourly';
 
     IF @rate IS NULL SET @rate = 0;
 
     SET @out_fee = @hours_chargeable * @rate;
-
 END;
 GO
 
