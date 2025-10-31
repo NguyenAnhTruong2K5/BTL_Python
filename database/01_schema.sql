@@ -36,10 +36,6 @@ CREATE TABLE ParkingSlot (
 );
 GO
 
--- Khởi tạo duy nhất 1 dòng cho bãi A, 100 chỗ
-INSERT INTO ParkingSlot (capacity, slots) VALUES (100, 100);
-GO
-
 -- ========================================
 -- Pricing
 -- ========================================
