@@ -2,7 +2,13 @@ from rest_framework import serializers
 from .models import Customer, Contract
 from django.utils import timezone
 #Serializers for Customer:
-class ListCreateRetrieveDestroyCustomerSerializer(serializers.ModelSerializer):
+class ListRetrieveDestroyCustomerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Customer
+        fields = '__all__'
+
+
+class CreateCustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = '__all__'
