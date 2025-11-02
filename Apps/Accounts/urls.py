@@ -4,8 +4,8 @@ from Apps.Accounts import views
 #API =
 urlpatterns = [
     # Handles GET (list) and POST (create)
-    path('customers/', views.CustomerListCreateView.as_view(), name='customer-list-create'),
-
+    path('customers/', views.CustomerListView.as_view(), name='customer-list-create'),
+    path('customers/create', views.CreateCustomerView.as_view(), name= 'create-customer'),
     # Handles DELETE on /customers/<pk>/delete/
     path('customers/<str:pk>/delete/', views.CustomerDestroyView.as_view(), name='customer-destroy'),
 
