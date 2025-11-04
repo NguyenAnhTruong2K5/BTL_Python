@@ -1,5 +1,4 @@
 from django.db import models
-from Apps.Vehicles.models import Vehicle
 
 class Card(models.Model):
     card_id = models.CharField(primary_key=True, max_length=50)  # Mã thẻ hoặc QR
@@ -21,7 +20,6 @@ class ParkingSlot(models.Model):
 
 class ParkingRecord(models.Model):
     record_id = models.AutoField(primary_key=True)
-    vehicle = models.ForeignKey(Vehicle, on_delete=models.SET_NULL, null=True, related_name="parking_records")
     card = models.ForeignKey(Card, on_delete=models.SET_NULL, null=True, related_name="parking_records")
     slot = models.ForeignKey(ParkingSlot, on_delete=models.SET_NULL, null=True, related_name="parking_records")
     entry_time = models.DateTimeField()

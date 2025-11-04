@@ -12,7 +12,6 @@ class UpdateCustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
         fields = ["phone_number", "email"]
-
 #Serializers for Contract:
 class CreateContractSerializer(serializers.ModelSerializer):
     cccd = serializers.SlugRelatedField(
