@@ -3,9 +3,17 @@ from Apps.Accounts import views
 
 #API =
 urlpatterns = [
-    # Handles GET (list) and POST (create)
-    path('customers/', views.CustomerListCreateView.as_view(), name='customer-list-create'),
+    # -- Customer urls --
 
+    # Handles CREATE on /customers/<cccd>/contracts/create
+    path('customers/<str:cccd>/contracts/create/',
+         views.CreateContractView.as_view(),
+         name='create-contract-for-customer'),
+    # Handles LIST on /customers/<cccd>/contracts/list
+    path('customers/<str:cccd>/contracts/list/', views.ListContractView.as_view(), name= 'contract-list'),
+    # Handles GET (list) and POST (create)
+    path('customers/', views.CustomerListView.as_view(), name='customer-list-create'),
+    path('customers/create', views.CreateCustomerView.as_view(), name= 'create-customer'),
     # Handles DELETE on /customers/<pk>/delete/
     path('customers/<str:pk>/delete/', views.CustomerDestroyView.as_view(), name='customer-destroy'),
 
@@ -16,8 +24,6 @@ urlpatterns = [
     path('customers/search/', views.SearchCustomerView.as_view(), name='customer-search'),
 
     # --- Contract URLs ---
-
-    # Handles POST on /contracts/create/
 
     # Handles GET (list) on /contracts/
     path('contracts/', views.ListContractView.as_view(), name='contract-list'),
@@ -30,8 +36,5 @@ urlpatterns = [
 
     # Handles DELETE on /contracts/<pk>/delete/
     path('contracts/<str:pk>/delete/', views.DeleteContractView.as_view(), name='contract-delete'),
-    path('customers/<str:cccd>/contracts/create/',
-         views.CreateContractView.as_view(),
-         name='create-contract-for-customer'),
-    path('customers/<str:cccd>/contracts/list/', views.ListContractView.as_view(), name= 'contract-list'),
+    
 ]

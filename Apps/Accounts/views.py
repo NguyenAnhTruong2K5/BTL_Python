@@ -1,19 +1,24 @@
-
 from rest_framework import generics, filters
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 
 from .serializers import *
 from .models import Customer, Contract
 
-#Views for Customer:
-class CustomerListCreateView(generics.ListCreateAPIView):
-    queryset = Customer.objects.all()
-    serializer_class = ListCreateRetrieveDestroyCustomerSerializer
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
+#Views for Customer:
+class CustomerListView(generics.ListAPIView):
+    queryset = Customer.objects.all()
+    serializer_class = ListRetrieveDestroyCustomerSerializer
+    pagination_class = StandardResultsSetPagination
 
 class CustomerDestroyView(generics.DestroyAPIView):
     queryset = Customer.objects.all()
-    serializer_class = ListCreateRetrieveDestroyCustomerSerializer
+    serializer_class = ListRetrieveDestroyCustomerSerializer
 
 
 class UpdateCustomerView(generics.RetrieveUpdateAPIView):
@@ -21,9 +26,14 @@ class UpdateCustomerView(generics.RetrieveUpdateAPIView):
     serializer_class = UpdateCustomerSerializer
 
 
+class CreateCustomerView(generics.CreateAPIView):
+    queryset = Customer.objects.all()
+    serializer_class = CreateCustomerSerializer
+
+
 class SearchCustomerView(generics.ListAPIView):
     queryset = Customer.objects.all()
-    serializer_class = ListCreateRetrieveDestroyCustomerSerializer
+    serializer_class = ListRetrieveDestroyCustomerSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ["cccd", "phone_number", "name"]
 
@@ -31,6 +41,8 @@ class SearchCustomerView(generics.ListAPIView):
 class CreateContractView(generics.CreateAPIView):
     queryset = Contract.objects.all()
     serializer_class = CreateContractSerializer
+    pagination_class = StandardResultsSetPagination
+
     def perform_create(self, serializer):
         customer_cccd = self.kwargs['cccd']
         customer_instance = get_object_or_404(Customer, cccd= customer_cccd)

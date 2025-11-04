@@ -1,10 +1,38 @@
 -- ========================================
+-- Trigger: trg_OnInsert_ParkingRecord
+-- ========================================
+CREATE TRIGGER trg_OnInsert_ParkingRecord
+ON ParkingRecord
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @current_open INT;
+    SELECT @current_open = COUNT(*) FROM ParkingRecord WHERE check_out_time IS NULL;
+
+    DECLARE @capacity INT, @slots INT;
+    SELECT TOP 1 @capacity = capacity, @slots = slots FROM ParkingSlot;
+
+    IF @slots <= 0
+    BEGIN
+        RAISERROR('Bãi đã đầy, không thể check-in.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END
+
+    UPDATE ParkingSlot
+    SET slots = slots - 1;
+
+    UPDATE c
+    SET c.status = 'active'
+    FROM Card c
+    JOIN inserted i ON c.card_id = i.card_id;
+END;
+GO
+
+-- ========================================
 -- Trigger: trg_OnUpdate_ParkingRecord
---  - Khi update ParkingRecord và check_out_time từ NULL -> NOT NULL (checkout):
---      * Gọi sp_CalcFeeForRecord để tính fee
---      * Nếu fee > 0 -> tạo bản ghi parking_invoice
---      * Tăng lại slots (bãi có slots tăng 1)
---      * Reset thẻ (status = 'inactive', plate_number = NULL)
 -- ========================================
 CREATE TRIGGER trg_OnUpdate_ParkingRecord
 ON ParkingRecord
@@ -23,7 +51,7 @@ BEGIN
 
     IF EXISTS (SELECT 1 FROM #tmpCheckout)
     BEGIN
-        DECLARE @rid VARCHAR(20), @plate NVARCHAR(20), @cid VARCHAR(20);
+        DECLARE @rid VARCHAR(20), @plate VARCHAR(20), @cid VARCHAR(20);
         DECLARE @fee DECIMAL(18,2);
         DECLARE @pricing_id VARCHAR(50);
 
@@ -34,7 +62,6 @@ BEGIN
         FETCH NEXT FROM cur INTO @rid, @plate, @cid;
         WHILE @@FETCH_STATUS = 0
         BEGIN
-            -- Kiểm tra thẻ active
             IF NOT EXISTS (SELECT 1 FROM Card WHERE card_id = @cid AND status = 'active')
             BEGIN
                 RAISERROR('Không thể check-out: thẻ không active.', 16, 1);
@@ -42,14 +69,11 @@ BEGIN
                 RETURN;
             END
 
-            -- Tính phí
             SET @fee = 0;
             EXEC sp_CalcFeeForRecord @record_id = @rid, @out_fee = @fee OUTPUT;
 
-            -- Nếu có phí > 0 tạo parking_invoice
             IF @fee > 0
             BEGIN
-                -- Lấy pricing_id theo vehicle_type đã lưu trong ParkingRecord (nếu muốn lưu loại áp dụng)
                 SELECT TOP 1 @pricing_id = p.pricing_id
                 FROM Pricing p
                 JOIN ParkingRecord pr ON pr.record_id = @rid
@@ -58,13 +82,10 @@ BEGIN
                 EXEC sp_CreateParkingInvoice @record_id = @rid, @pricing_id = @pricing_id, @amount = @fee, @method = 'cash';
             END
 
-            -- Tăng lại slots 
             UPDATE ParkingSlot SET slots = slots + 1;
 
-            -- Reset thẻ
             UPDATE Card
-            SET status = 'inactive',
-                plate_number = NULL
+            SET status = 'inactive'
             WHERE card_id = @cid;
 
             FETCH NEXT FROM cur INTO @rid, @plate, @cid;
@@ -79,10 +100,6 @@ GO
 
 -- ========================================
 -- Trigger: trg_AutoUpdate_ContractDates
---  - Khi INSERT hoặc UPDATE Contract:
---      * Tự đặt start_date = NOW()
---      * Tính end_date dựa trên term + duration (month/year)
---      * (Không tự động giảm slots — theo yêu cầu: "không còn insert contract nữa" / slot không bị trừ khi tạo contract)
 -- ========================================
 CREATE TRIGGER trg_AutoUpdate_ContractDates
 ON Contract
@@ -91,13 +108,11 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Đặt start_date = thời điểm hiện tại mỗi khi thêm hoặc sửa
     UPDATE c
     SET c.start_date = CAST(GETDATE() AS DATE)
     FROM Contract c
     JOIN inserted i ON c.plate_number = i.plate_number;
 
-    -- Tự tính end_date từ start_date (hiện tại là thời điểm GETDATE())
     UPDATE c
     SET c.end_date =
         CASE
