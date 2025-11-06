@@ -1,0 +1,35 @@
+{% extends "parkings/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>➕ Thêm thẻ mới</h2>
+  <form method="POST">
+    {% csrf_token %}
+    <p>Bấm nút bên dưới để tạo một thẻ mới (trạng thái mặc định: <b>inactive</b>).</p>
+    <button type="submit" class="btn btn-primary">Thêm thẻ</button>
+  </form>
+
+  <hr>
+
+  <h4>Danh sách thẻ hiện có</h4>
+  <table class="table table-bordered mt-3">
+    <thead>
+      <tr>
+        <th style="width: 100px;">Mã thẻ</th>
+        <th>Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for card in cards %}
+      <tr>
+        <td>{{ card.id }}</td>
+        <td>{{ card.status }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="2" class="text-center text-muted">Chưa có thẻ nào</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
