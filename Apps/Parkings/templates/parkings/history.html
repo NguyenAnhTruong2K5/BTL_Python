@@ -1,0 +1,142 @@
+{% extends "Parkings/base.html" %}
+{% block content %}
+
+<style>
+/* Tổng thể */
+.filter-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  padding: 20px 25px;
+  margin-bottom: 25px;
+  border-left: 5px solid #007bff;
+}
+
+/* Bộ lọc */
+.filter-form input, 
+.filter-form select {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding: 8px 12px;
+  font-size: 14px;
+  width: 160px;
+  transition: all 0.3s ease;
+}
+
+.filter-form input:focus,
+.filter-form select:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+.filter-form button {
+  border-radius: 8px;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #007bff, #00c6ff);
+  border: none;
+  color: #fff;
+  font-weight: 600;
+  transition: background 0.3s;
+}
+
+.filter-form button:hover {
+  background: linear-gradient(135deg, #0056b3, #0096c7);
+}
+
+/* Bảng dữ liệu */
+.table-container {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  padding: 20px;
+}
+
+.table thead {
+  background: #007bff;
+  color: #fff;
+  text-align: center;
+}
+
+.table tbody tr:hover {
+  background: rgba(0, 123, 255, 0.05);
+  transition: 0.2s;
+}
+
+.status-active {
+  color: #28a745;
+  font-weight: 600;
+}
+.status-inactive {
+  color: #dc3545;
+  font-weight: 600;
+}
+</style>
+
+<h2 class="mb-4 text-primary fw-bold"><i class="bi bi-clock-history"></i> Lịch sử gửi xe</h2>
+
+<div class="filter-card">
+  <form method="get" class="filter-form d-flex flex-wrap gap-2 align-items-center">
+      <input type="text" name="plate" placeholder="🔍 Biển số" value="{{ filters.plate }}">
+      <input type="text" name="card_id" placeholder="💳 Mã thẻ" value="{{ filters.card_id }}">
+      <select name="vehicle_type">
+          <option value="">🚗 Loại xe</option>
+          <option value="motorbike" {% if filters.vehicle_type == 'motorbike' %}selected{% endif %}>Xe máy</option>
+          <option value="car" {% if filters.vehicle_type == 'car' %}selected{% endif %}>Ô tô</option>
+      </select>
+      <select name="status">
+          <option value="">📋 Trạng thái</option>
+          <option value="checked_in" {% if filters.status == 'checked_in' %}selected{% endif %}>Còn trong bãi</option>
+          <option value="checked_out" {% if filters.status == 'checked_out' %}selected{% endif %}>Đã ra</option>
+      </select>
+      <input type="date" name="start_date" value="{{ filters.start_date }}">
+      <input type="date" name="end_date" value="{{ filters.end_date }}">
+      <button type="submit">Lọc</button>
+  </form>
+</div>
+
+<div class="table-container">
+  <table class="table table-hover align-middle">
+    <thead>
+      <tr>
+        <th>Biển số</th>
+        <th>Mã thẻ</th>
+        <th>Loại xe</th>
+        <th>Thời gian vào</th>
+        <th>Thời gian ra</th>
+        <th>Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr>
+        <td class="fw-semibold">{{ r.plate_number }}</td>
+        <td>{{ r.card.id }}</td>
+        <td>{% if r.vehicle_type == "car" %}🚗 Ô tô{% else %}🏍️ Xe máy{% endif %}</td>
+        <td>{{ r.check_in_time|date:"d/m/Y H:i" }}</td>
+        <td>
+          {% if r.check_out_time %}
+            {{ r.check_out_time|date:"d/m/Y H:i" }}
+          {% else %}
+            <span class="text-secondary">—</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if r.check_out_time %}
+            <span class="status-inactive">Đã ra</span>
+          {% else %}
+            <span class="status-active">Còn trong bãi</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center text-muted py-3">
+          😢 Không có bản ghi nào phù hợp.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "parkings/base.html" %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-5">
+      <h2 class="text-center mb-4 fw-bold text-primary">
+        🚗 Check-in xe vào bãi
+      </h2>
+
+      <!-- Form check-in -->
+      <form method="POST" enctype="multipart/form-data" id="checkinForm">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label for="card_id" class="form-label">Chọn thẻ đang rảnh:</label>
+          <select name="card_id" id="card_id" class="form-select" required>
+            <option value="">-- Chọn thẻ --</option>
+            {% for card in cards %}
+              <option value="{{ card.id }}">{{ card.id }} ({{ card.status }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="image" class="form-label">Ảnh xe vào bãi:</label>
+          <input type="file" name="image" id="image" accept="image/*" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="vehicle_type" class="form-label">Loại phương tiện:</label>
+          <select name="vehicle_type" id="vehicle_type" class="form-select" required>
+            <option value="">-- Chọn loại xe --</option>
+            <option value="motorbike">Xe máy</option>
+            <option value="car">Ô tô</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 fw-bold" id="submitBtn">
+          ✅ Xác nhận Check-In
+        </button>
+      </form>
+
+      <hr class="my-4">
+
+      <!-- Kết quả đọc biển số -->
+      {% if plate_number %}
+      <div id="resultBox" class="text-center fade-in">
+        <h4 class="text-success fw-bold">📸 Kết quả nhận dạng:</h4>
+        <div class="display-5 text-dark">{{ plate_number }}</div>
+      </div>
+      {% endif %}
+
+      <!-- Thông báo -->
+      {% if messages %}
+      <div class="mt-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} fade show" role="alert">
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Hiệu ứng fade-in mượt mà */
+  .fade-in {
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hiệu ứng hover nút */
+  #submitBtn:hover {
+    background-color: #0b8c3e;
+    transform: scale(1.03);
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Card đẹp hơn */
+  .card {
+    background: #ffffff;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+</style>
+
+{% endblock %}

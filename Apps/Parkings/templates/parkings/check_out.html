@@ -1,0 +1,123 @@
+{% extends 'Parkings/base.html' %}
+{% block title %}Check Out{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h4 class="card-title">Check Out</h4>
+
+        <form method="post" enctype="multipart/form-data" id="checkout-form">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Chọn thẻ (active)</label>
+            <select class="form-select" name="card_id" required>
+              <option value="">-- Chọn thẻ --</option>
+              {% for card in cards %}
+                <option value="{{ card.id }}">{{ card.id }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Ảnh check-out</label>
+            <input type="file" name="image" accept="image/*" class="form-control"
+                   onchange="previewImage(this,'checkout-preview')" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Xem trước ảnh</label>
+            <div class="border p-2">
+              <img id="checkout-preview" src="" alt="Preview" style="max-width:100%; max-height:180px;">
+            </div>
+          </div>
+
+          <div class="d-flex gap-2">
+            <button class="btn btn-danger" type="submit">Xác nhận Check Out</button>
+            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#lostCardModal">
+              Mất thẻ
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Khi cần xác minh xe do thẻ mất -->
+    {% if lost_mode %}
+    <div class="alert alert-warning mt-3 text-center">
+      <h5>🔎 Xác minh xe khi thẻ bị mất</h5>
+      <p>Thẻ <b>{{ card.id }}</b> đang hoạt động, vui lòng xác minh xe bên dưới:</p>
+      {% if check_in_image_url %}
+      <img src="{{ check_in_image_url }}" alt="Ảnh xe check-in" class="img-fluid mb-3"
+           style="max-width: 400px; border-radius: 10px;">
+      {% else %}
+      <p class="text-danger">⚠️ Không tìm thấy ảnh check-in cho bản ghi này.</p>
+      {% endif %}
+      
+      <form method="post" action="{% url 'Parkings:manual_authentication' record.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="from_lost_card" value="true">
+        <button type="submit" name="confirm" value="yes" class="btn btn-success me-2">Authentication</button>
+        <button type="submit" name="confirm" value="no" class="btn btn-danger">Unauthentic</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- Khi cần xác minh biển số không khớp -->
+    {% if mismatch_record %}
+    <div class="alert alert-warning mt-3 text-center">
+      <h5>⚠️ Biển số không khớp, cần xác minh</h5>
+      <p>AI đọc: <b>{{ mismatch_record.ai_plate }}</b> — DB: <b>{{ mismatch_record.db_plate }}</b></p>
+
+      <div class="row justify-content-center">
+        <div class="col-md-5">
+          <p class="text-muted">Ảnh Check-in</p>
+          <img src="{{ mismatch_record.check_in_image_path }}" alt="Check-in image" class="img-fluid">
+        </div>
+      </div>
+
+      <form method="post" action="{% url 'Parkings:manual_authentication' mismatch_record.record_id %}" class="mt-3">
+        {% csrf_token %}
+        <button name="confirm" value="yes" type="submit" class="btn btn-primary me-2">Authentication</button>
+        <button name="confirm" value="no" type="submit" class="btn btn-secondary">Unauthentic</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+
+<!-- Modal nhập ID thẻ bị mất -->
+<div class="modal fade" id="lostCardModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post" action="{% url 'Parkings:lost_card' %}">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title">Báo mất thẻ</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <label for="lost-card-id" class="form-label">Nhập ID thẻ bị mất</label>
+          <input type="text" class="form-control" id="lost-card-id" name="card_id"
+                 placeholder="VD: 123" required>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-danger">Xác nhận mất thẻ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function previewImage(input, previewId){
+  const file = input.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = e => document.getElementById(previewId).src = e.target.result;
+    reader.readAsDataURL(file);
+  }
+}
+</script>
+{% endblock %}
