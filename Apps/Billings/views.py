@@ -1,6 +1,6 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from .models import Contract_Invoice, Parking_Invoice
+from .models import ContractInvoice, ParkingInvoice
 from .serializers import (
     ContractInvoiceSerializer,
     CreateContractInvoiceSerializer,
@@ -13,7 +13,7 @@ from .serializers import (
 # Contract invoice
 
 class ContractInvoiceListCreateView(generics.ListCreateAPIView):
-    queryset = Contract_Invoice.objects.all()
+    queryset = ContractInvoice.objects.all()
     serializer_class = ContractInvoiceSerializer
 
     def post(self, request, *args, **kwargs):
@@ -29,13 +29,13 @@ class ContractInvoiceListCreateView(generics.ListCreateAPIView):
 
 
 class ContractInvoiceRetrieveUpdateView(generics.RetrieveUpdateAPIView):
-    queryset = Contract_Invoice.objects.all()
+    queryset = ContractInvoice.objects.all()
     serializer_class = ContractInvoiceSerializer
     lookup_field = 'invoice_id'
 
 
 class ContractInvoiceDestroyView(generics.DestroyAPIView):
-    queryset = Contract_Invoice.objects.all()
+    queryset = ContractInvoice.objects.all()
     serializer_class = ContractInvoiceSerializer
     lookup_field = 'invoice_id'
 
@@ -45,13 +45,13 @@ class SearchContractInvoiceView(generics.ListAPIView):
 
     def get_queryset(self):
         search_term = self.request.GET.get('search', '')
-        return Contract_Invoice.objects.filter(pricing__pricing_id__icontains=search_term)
+        return ContractInvoice.objects.filter(pricing__pricing_id__icontains=search_term)
 
 
 # Parking Invoice
 
 class ParkingInvoiceListCreateView(generics.ListCreateAPIView):
-    queryset = Parking_Invoice.objects.all()
+    queryset = ParkingInvoice.objects.all()
     serializer_class = ParkingInvoiceSerializer
 
     def post(self, request, *args, **kwargs):
@@ -67,13 +67,13 @@ class ParkingInvoiceListCreateView(generics.ListCreateAPIView):
 
 
 class ParkingInvoiceRetrieveUpdateView(generics.RetrieveUpdateAPIView):
-    queryset = Parking_Invoice.objects.all()
+    queryset = ParkingInvoice.objects.all()
     serializer_class = ParkingInvoiceSerializer
     lookup_field = 'invoice_id'
 
 
 class ParkingInvoiceDestroyView(generics.DestroyAPIView):
-    queryset = Parking_Invoice.objects.all()
+    queryset = ParkingInvoice.objects.all()
     serializer_class = ParkingInvoiceSerializer
     lookup_field = 'invoice_id'
 
@@ -83,4 +83,4 @@ class SearchParkingInvoiceView(generics.ListAPIView):
 
     def get_queryset(self):
         search_term = self.request.GET.get('search', '')
-        return Parking_Invoice.objects.filter(record__record_id__icontains=search_term)
+        return ParkingInvoice.objects.filter(record__record_id__icontains=search_term)
