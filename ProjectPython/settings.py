@@ -102,7 +102,9 @@ AUTH_PASSWORD_VALIDATORS = [
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'Apps' / 'Parkings' / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'Apps' / 'Parkings' / 'templates',
+        ],
         'APP_DIRS': True, # This line is CRITICAL for the admin
         'OPTIONS': {
             'context_processors': [
