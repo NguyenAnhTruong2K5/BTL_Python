@@ -8,7 +8,7 @@ USE ParkingManagement;
 GO
 
 -- ========================================
--- SEQUENCES (dùng cho id tự sinh)
+-- SEQUENCES
 -- ========================================
 CREATE SEQUENCE seq_card START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_record START WITH 1 INCREMENT BY 1;
@@ -28,7 +28,7 @@ CREATE TABLE Customer (
 GO
 
 -- ========================================
--- ParkingSlot (CHỈ 2 cột: capacity, slots)
+-- ParkingSlot
 -- ========================================
 CREATE TABLE ParkingSlot (
     capacity INT NOT NULL,
@@ -88,7 +88,8 @@ CREATE TABLE ParkingRecord (
     check_in_time DATETIME NOT NULL,
     check_out_time DATETIME NULL,
     image_path VARCHAR(500) NULL DEFAULT NULL,
-    FOREIGN KEY (card_id) REFERENCES Card(card_id)
+    FOREIGN KEY (card_id) REFERENCES Card(card_id),
+    FOREIGN KEY (plate_number) REFERENCES Contract(plate_number)
 );
 GO
 
@@ -98,9 +99,11 @@ GO
 CREATE TABLE contract_invoice (
     invoice_id VARCHAR(30) PRIMARY KEY
         DEFAULT ('CINV' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_contract_invoice AS VARCHAR(6)), 6)),
+    plate_number VARCHAR(20) NOT NULL,
     pricing_id VARCHAR(50) NOT NULL,
     amount DECIMAL(18,2) NOT NULL,
     payment_date DATETIME DEFAULT GETDATE(),
+    FOREIGN KEY (plate_number) REFERENCES Contract(plate_number),
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id)
 );
 GO
@@ -112,10 +115,12 @@ CREATE TABLE parking_invoice (
     invoice_id VARCHAR(30) PRIMARY KEY
         DEFAULT ('PINV' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_parking_invoice AS VARCHAR(6)), 6)),
     record_id VARCHAR(30) NOT NULL,
+    plate_number VARCHAR(20) NOT NULL,
     pricing_id VARCHAR(50) NULL,
     amount DECIMAL(18,2) NOT NULL,
     payment_date DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (record_id) REFERENCES ParkingRecord(record_id),
+    FOREIGN KEY (plate_number) REFERENCES Contract(plate_number),
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id)
 );
 GO
