@@ -46,7 +46,6 @@ class ContractInvoice(models.Model):
     amount = models.DecimalField(max_digits=18, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
 
-
     def save(self, *args, **kwargs):
         if not self.invoice_id:
             last_invoice = ContractInvoice.objects.order_by('-invoice_id').first()
@@ -61,8 +60,8 @@ class ContractInvoice(models.Model):
 
 class ParkingInvoice(models.Model):
     invoice_id = models.CharField(max_length=30, primary_key=True, editable=False)
-    record = models.ForeignKey('Parkings.ParkingRecord', on_delete=models.CASCADE)
-    pricing = models.ForeignKey(Pricing, on_delete=models.SET_NULL, null=True, blank=True,
+    record_id = models.ForeignKey('Parkings.ParkingRecord', on_delete=models.CASCADE)
+    pricing = models.ForeignKey('Pricing', on_delete=models.SET_NULL, null=True, blank=True,
                                 to_field='pricing_id', db_column='pricing_id')
     amount = models.DecimalField(max_digits=18, decimal_places=2)
     payment_date = models.DateTimeField(default=timezone.now)
@@ -77,3 +76,6 @@ class ParkingInvoice(models.Model):
                 new_num = 1
             self.invoice_id = f"PINV{new_num:06d}"
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.invoice_id} - {self.amount} "

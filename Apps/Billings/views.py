@@ -37,18 +37,19 @@ class ContractInvoiceDestroyView(generics.DestroyAPIView):
     lookup_field = 'invoice_id'
 
 
+
 # Parking_Invoice
 
 class ParkingInvoiceListCreateView(generics.ListCreateAPIView):
-    queryset = ParkingInvoice.objects.all()
-    serializer_class = ParkingInvoiceSummarySerializer  # rút gọn hiển thị
+    queryset = ParkingInvoice.objects.all().order_by('-payment_date')
+    serializer_class = ParkingInvoiceSummarySerializer
 
     def post(self, request, *args, **kwargs):
         serializer = CreateParkingInvoiceSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         invoice = serializer.save()
         return Response(
-            ParkingInvoiceSummarySerializer(invoice).data,
+            ParkingInvoiceSummarySerializer(invoice).data,  # <-- dùng serializer hiển thị
             status=status.HTTP_201_CREATED
         )
 
@@ -65,15 +66,7 @@ class ParkingInvoiceDestroyView(generics.DestroyAPIView):
     lookup_field = 'invoice_id'
 
 
-# Search
-
-class SearchContractInvoiceView(generics.ListAPIView):
-    serializer_class = ContractInvoiceSummarySerializer
-
-    def get_queryset(self):
-        search_term = self.request.GET.get('search', '')
-        return ContractInvoice.objects.filter(invoice_id__icontains=search_term)
-
+# Search Parking_Invoice
 
 class SearchParkingInvoiceView(generics.ListAPIView):
     serializer_class = ParkingInvoiceSummarySerializer
@@ -83,8 +76,18 @@ class SearchParkingInvoiceView(generics.ListAPIView):
         return ParkingInvoice.objects.filter(invoice_id__icontains=search_term)
 
 
+
 # Pricing List
 
 class PricingListView(generics.ListAPIView):
     queryset = Pricing.objects.all()
     serializer_class = PricingSerializer
+
+
+class SearchContractInvoiceView(generics.ListAPIView):
+    serializer_class = ContractInvoiceSummarySerializer
+
+    def get_queryset(self):
+        search_term = self.request.GET.get('search', '')
+        return ContractInvoice.objects.filter(invoice_id__icontains=search_term)
+

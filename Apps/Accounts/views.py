@@ -71,3 +71,4 @@ class DeleteContractView(generics.DestroyAPIView):
     queryset = Contract.objects.all()
     serializer_class = DeleteContractSerializer
 
+
