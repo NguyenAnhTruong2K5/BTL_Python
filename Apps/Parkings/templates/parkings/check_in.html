@@ -1,10 +1,42 @@
 {% extends "parkings/base.html" %}
 {% block content %}
+
+<style>
+
+  /* Hiệu ứng fade-in mượt mà */
+  .fade-in {
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Hiệu ứng hover nút */
+  #submitBtn:hover {
+    background-color: #0b8c3e;
+    transform: scale(1.03);
+    transition: all 0.2s ease-in-out;
+  }
+
+  /* Card đẹp hơn */
+  .card {
+    background: #ffffff;
+    border-radius: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .card:hover {
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+</style>
+
 <div class="container mt-5">
   <div class="card shadow-lg border-0 rounded-4">
     <div class="card-body p-5">
-      <h2 class="text-center mb-4 fw-bold text-primary">
-        🚗 Check-in xe vào bãi
+      <h2 class="text-center mb-4 fw-bold text-primary text-danger">
+        Check-in xe vào bãi
       </h2>
 
       <!-- Form check-in -->
@@ -35,7 +67,7 @@
         </div>
 
         <button type="submit" class="btn btn-success w-100 fw-bold" id="submitBtn">
-          ✅ Xác nhận Check-In
+          Xác nhận Check-In
         </button>
       </form>
 
@@ -62,35 +94,5 @@
     </div>
   </div>
 </div>
-
-<style>
-  /* Hiệu ứng fade-in mượt mà */
-  .fade-in {
-    animation: fadeIn 1s ease-in-out;
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  /* Hiệu ứng hover nút */
-  #submitBtn:hover {
-    background-color: #0b8c3e;
-    transform: scale(1.03);
-    transition: all 0.2s ease-in-out;
-  }
-
-  /* Card đẹp hơn */
-  .card {
-    background: #ffffff;
-    border-radius: 15px;
-    transition: all 0.3s ease;
-  }
-
-  .card:hover {
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-  }
-</style>
 
 {% endblock %}

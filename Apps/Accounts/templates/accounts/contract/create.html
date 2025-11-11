@@ -1,0 +1,120 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Create Contract - Parking Management{% endblock %}
+
+{% block content %}
+<div class="main row justify-content-center border border-danger rounded-3 p-4">
+    <div class="col-md-6">
+        <h1 class="mb-4 text-danger text-center">Create Contract</h1>
+        
+        <form id="contractForm">
+            <div class="mb-3">
+                <label for="customer_cccd" class="form-label">Customer CCCD</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="customer_cccd" name="customer_cccd" required>
+                    <button type="button" class="btn btn-outline-secondary" onclick="searchCustomer()">Search</button>
+                </div>
+            </div>
+            
+            <div id="customerInfo" class="mb-3 d-none">
+                <label class="form-label">Customer Info</label>
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Name:</strong> <span id="customerName"></span></p>
+                        <p class="mb-1"><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="plate_number" class="form-label">Plate Number</label>
+                <input type="text" class="form-control" id="plate_number" name="plate_number" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="type" class="form-label">Contract Type</label>
+                <select class="form-select" id="type" name="type" required>
+                    <option value="">Select type</option>
+                    <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status" required>
+                    <option value="">Select status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-danger">Create Contract</button>
+            <a href="{% url 'contract-list-page' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function searchCustomer() {
+    const cccd = document.getElementById('customer_cccd').value;
+    if (!cccd) {
+        alert('Please enter a CCCD number');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/customers/search/?search=${cccd}`);
+        const data = await response.json();
+        
+        if (data.results && data.results.length > 0) {
+            const customer = data.results[0];
+            document.getElementById('customerName').textContent = customer.name;
+            document.getElementById('customerPhone').textContent = customer.phone_number;
+            document.getElementById('customerInfo').classList.remove('d-none');
+        } else {
+            alert('Customer not found');
+            document.getElementById('customerInfo').classList.add('d-none');
+        }
+    } catch (error) {
+        console.error('Error searching customer:', error);
+        alert('Error searching for customer');
+    }
+}
+
+document.getElementById('contractForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        cccd: document.getElementById('customer_cccd').value,
+        plate_number: document.getElementById('plate_number').value,
+        type: document.getElementById('type').value,
+        status: document.getElementById('status').value
+    };
+    
+    try {
+        const response = await fetch(`/api/customers/${formData.cccd}/contracts/create/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            window.location.href = '{% url "contract-list-page" %}';
+        } else {
+            const data = await response.json();
+            alert('Error creating contract: ' + JSON.stringify(data));
+        }
+    } catch (error) {
+        console.error('Error creating contract:', error);
+        alert('Error creating contract. Please try again.');
+    }
+});
+</script>
+{% endblock %}

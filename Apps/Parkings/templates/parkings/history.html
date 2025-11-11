@@ -2,14 +2,14 @@
 {% block content %}
 
 <style>
-/* Tổng thể */
+/* body */
 .filter-card {
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 2px 4px 12px rgba(98, 14, 14, 0.79);
   padding: 20px 25px;
   margin-bottom: 25px;
-  border-left: 5px solid #007bff;
+  border: 1px solid #e33f3fff;
 }
 
 /* Bộ lọc */
@@ -32,7 +32,7 @@
 .filter-form button {
   border-radius: 8px;
   padding: 8px 20px;
-  background: linear-gradient(135deg, #007bff, #00c6ff);
+  background: linear-gradient(135deg, #e33f3fff, #e38e3fff);
   border: none;
   color: #fff;
   font-weight: 600;
@@ -72,25 +72,29 @@
 }
 </style>
 
-<h2 class="mb-4 text-primary fw-bold"><i class="bi bi-clock-history"></i> Lịch sử gửi xe</h2>
+<h1 class="mb-4 text-light fw-bold text-center "><i class="bi bi-clock-history"></i> Lịch sử gửi xe</h2>
 
 <div class="filter-card">
   <form method="get" class="filter-form d-flex flex-wrap gap-2 align-items-center">
-      <input type="text" name="plate" placeholder="🔍 Biển số" value="{{ filters.plate }}">
-      <input type="text" name="card_id" placeholder="💳 Mã thẻ" value="{{ filters.card_id }}">
+      <input type="text" name="plate" placeholder="Biển số" value="{{ filters.plate }}">
+      <input type="text" name="card_id" placeholder="Mã thẻ" value="{{ filters.card_id }}">
       <select name="vehicle_type">
-          <option value="">🚗 Loại xe</option>
+          <option value="">Loại xe</option>
           <option value="motorbike" {% if filters.vehicle_type == 'motorbike' %}selected{% endif %}>Xe máy</option>
           <option value="car" {% if filters.vehicle_type == 'car' %}selected{% endif %}>Ô tô</option>
       </select>
       <select name="status">
-          <option value="">📋 Trạng thái</option>
+          <option value="">Trạng thái</option>
           <option value="checked_in" {% if filters.status == 'checked_in' %}selected{% endif %}>Còn trong bãi</option>
           <option value="checked_out" {% if filters.status == 'checked_out' %}selected{% endif %}>Đã ra</option>
       </select>
-      <input type="date" name="start_date" value="{{ filters.start_date }}">
-      <input type="date" name="end_date" value="{{ filters.end_date }}">
-      <button type="submit">Lọc</button>
+      <div>
+      <label class="mt-2">From: <input type="date" name="start_date" value="{{ filters.start_date }}" class="ms-2"></label>
+     
+      <label class="mt-2">To: <input type="date" name="end_date" value="{{ filters.end_date }}" class="ms-2"></label>
+      
+      </div>
+      <div class="mt-2"><button type="submit">Lọc</button></div>
   </form>
 </div>
 
@@ -106,12 +110,12 @@
         <th>Trạng thái</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody class="text-center">
       {% for r in records %}
       <tr>
         <td class="fw-semibold">{{ r.plate_number }}</td>
         <td>{{ r.card.id }}</td>
-        <td>{% if r.vehicle_type == "car" %}🚗 Ô tô{% else %}🏍️ Xe máy{% endif %}</td>
+        <td>{% if r.vehicle_type == "car" %} Ô tô{% else %} Xe máy{% endif %}</td>
         <td>{{ r.check_in_time|date:"d/m/Y H:i" }}</td>
         <td>
           {% if r.check_out_time %}
@@ -131,7 +135,7 @@
       {% empty %}
       <tr>
         <td colspan="6" class="text-center text-muted py-3">
-          😢 Không có bản ghi nào phù hợp.
+          Không có bản ghi nào phù hợp.
         </td>
       </tr>
       {% endfor %}

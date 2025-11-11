@@ -1,0 +1,178 @@
+{% extends 'accounts/base.html' %}
+{% load statistic_filters %}
+
+{% block title %}Thống kê - Quản lý bãi đỗ xe{% endblock %}
+
+{% block content %}
+<div class="mb-4 text-center">
+    <h1 class="mb-3 text-light">Thống kê tổng quan</h1>
+</div>
+
+<div class="row g-4">
+    <!-- Tổng số khách hàng -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Khách hàng</h5>
+                <div class="text-center">
+                    <div class="display-4 text-primary mb-3">{{ total_customers }}</div>
+                    <p class="mb-0">Tổng số khách hàng</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tổng số hợp đồng -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Hợp đồng</h5>
+                <div class="text-center">
+                    <div class="display-4 text-success mb-3">{{ total_contracts }}</div>
+                    <p class="mb-0">Tổng số hợp đồng</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê theo loại hợp đồng -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Thống kê theo loại hợp đồng</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="contractTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê theo trạng thái -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Thống kê theo trạng thái</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="contractStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng thống kê chi tiết -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Chi tiết thống kê</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Phân loại</th>
+                                <th>Số lượng</th>
+                                <th>Tỷ lệ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Theo loại hợp đồng -->
+                            <tr>
+                                <td colspan="3" class="table-light fw-bold">Theo loại hợp đồng</td>
+                            </tr>
+                                            <tr>
+                                <td>Theo tháng</td>
+                                <td>{{ contract_types.monthly }}</td>
+                                <td>{{ contract_types.monthly|divisor:total_contracts|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                            <tr>
+                                <td>Theo năm</td>
+                                <td>{{ contract_types.yearly }}</td>
+                                <td>{{ contract_types.yearly|divisor:total_contracts|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                            
+                            <!-- Theo trạng thái -->
+                            <tr>
+                                <td colspan="3" class="table-light fw-bold">Theo trạng thái</td>
+                            </tr>
+                            <tr>
+                                <td>Đang hoạt động</td>
+                                <td>{{ contract_status.valid }}</td>
+                                <td>{{ contract_status.valid|divisor:total_contracts|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                            <tr>
+                                <td>Không hoạt động</td>
+                                <td>{{ contract_status.invalid }}</td>
+                                <td>{{ contract_status.invalid|divisor:total_contracts|multiply:100|floatformat:1 }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Biểu đồ phân loại hợp đồng
+    const typeCtx = document.getElementById('contractTypeChart').getContext('2d');
+    new Chart(typeCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Theo tháng', 'Theo năm'],
+            datasets: [{
+                data: [
+                    {{ contract_types.monthly }},
+                    {{ contract_types.yearly }}
+                ],
+                backgroundColor: [
+                    '#36a2eb',
+                    '#ffcd56'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Biểu đồ trạng thái hợp đồng
+    const statusCtx = document.getElementById('contractStatusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Đang hoạt động', 'Không hoạt động'],
+            datasets: [{
+                data: [
+                    {{ contract_status.valid }},
+                    {{ contract_status.invalid }}
+                ],
+                backgroundColor: [
+                    '#4caf50',
+                    '#f44336'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

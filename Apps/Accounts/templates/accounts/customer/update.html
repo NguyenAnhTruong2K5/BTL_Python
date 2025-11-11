@@ -1,0 +1,84 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Update Customer - Parking Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4 text-danger">Update Customer</h1>
+        
+        <form id="customerForm">
+            <div class="mb-3">
+                <label for="cccd" class="form-label">CCCD</label>
+                <input type="text" class="form-control" id="cccd" name="cccd" readonly>
+            </div>
+            
+            <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="phone_number" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="phone_number" name="phone_number" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Update Customer</button>
+            <a href="{% url 'customer-list-page' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load customer data
+async function loadCustomer() {
+    try {
+        const cccd = '{{ customer.cccd }}';
+        const response = await fetch(`/api/customers/${cccd}/update/`);
+        const data = await response.json();
+        
+        document.getElementById('cccd').value = data.cccd;
+        document.getElementById('name').value = data.name;
+        document.getElementById('phone_number').value = data.phone_number;
+    } catch (error) {
+        console.error('Error loading customer:', error);
+        alert('Error loading customer data. Please try again.');
+    }
+}
+
+document.getElementById('customerForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        name: document.getElementById('name').value,
+        phone_number: document.getElementById('phone_number').value
+    };
+    
+    try {
+        const cccd = document.getElementById('cccd').value;
+        const response = await fetch(`/api/customers/${cccd}/update/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            window.location.href = '{% url "customer-list-page" %}';
+        } else {
+            const data = await response.json();
+            alert('Error updating customer: ' + JSON.stringify(data));
+        }
+    } catch (error) {
+        console.error('Error updating customer:', error);
+        alert('Error updating customer. Please try again.');
+    }
+});
+
+// Load customer data when page loads
+document.addEventListener('DOMContentLoaded', loadCustomer);
+</script>
+{% endblock %}

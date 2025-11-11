@@ -1,5 +1,5 @@
 djangorestframework
-Django>=4.2,<5.0
+Django>=5.0
 pillow
 mssql-django
 python-dateutil

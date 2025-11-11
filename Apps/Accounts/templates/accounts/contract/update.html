@@ -1,0 +1,113 @@
+{% extends 'accounts/base.html' %}
+
+{% block title %}Update Contract - Parking Management{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4">Update Contract</h1>
+        
+        <form id="contractForm">
+            <div class="mb-3">
+                <label for="customer_cccd" class="form-label">Customer CCCD</label>
+                <input type="text" class="form-control" id="customer_cccd" name="customer_cccd" readonly>
+            </div>
+            
+            <div id="customerInfo" class="mb-3">
+                <label class="form-label">Customer Info</label>
+                <div class="card">
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Name:</strong> <span id="customerName"></span></p>
+                        <p class="mb-1"><strong>Phone:</strong> <span id="customerPhone"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="plate_number" class="form-label">Plate Number</label>
+                <input type="text" class="form-control" id="plate_number" name="plate_number" required>
+            </div>
+            
+            <div class="mb-3">
+                <label for="type" class="form-label">Contract Type</label>
+                <select class="form-select" id="type" name="type" required>
+                    <option value="">Select type</option>
+                    <option value="daily">Daily</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="yearly">Yearly</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status" required>
+                    <option value="">Select status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Update Contract</button>
+            <a href="{% url 'contract-list-page' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load contract data
+async function loadContract() {
+    try {
+        const id = '{{ contract.id }}';
+        const response = await fetch(`/api/contracts/${id}/update/`);
+        const data = await response.json();
+        
+        document.getElementById('customer_cccd').value = data.cccd.cccd;
+        document.getElementById('customerName').textContent = data.cccd.name;
+        document.getElementById('customerPhone').textContent = data.cccd.phone_number;
+        document.getElementById('plate_number').value = data.plate_number;
+        document.getElementById('type').value = data.type;
+        document.getElementById('status').value = data.status;
+    } catch (error) {
+        console.error('Error loading contract:', error);
+        alert('Error loading contract data. Please try again.');
+    }
+}
+
+document.getElementById('contractForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        plate_number: document.getElementById('plate_number').value,
+        type: document.getElementById('type').value,
+        status: document.getElementById('status').value
+    };
+    
+    try {
+        const id = '{{ contract.id }}';
+        const response = await fetch(`/api/contracts/${id}/update/`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (response.ok) {
+            window.location.href = '{% url "contract-list-page" %}';
+        } else {
+            const data = await response.json();
+            alert('Error updating contract: ' + JSON.stringify(data));
+        }
+    } catch (error) {
+        console.error('Error updating contract:', error);
+        alert('Error updating contract. Please try again.');
+    }
+});
+
+// Load contract data when page loads
+document.addEventListener('DOMContentLoaded', loadContract);
+</script>
+{% endblock %}

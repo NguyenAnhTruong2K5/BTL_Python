@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from django.contrib.messages import constants as messages
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-a%b*c(123)456+789!xyz-fix-this-now'
@@ -22,7 +21,7 @@ INSTALLED_APPS = [
 
     'Apps.Accounts.apps.AccountsConfig',
     'Apps.Parkings.apps.ParkingsConfig',
-    'Apps.Billings.apps.BillingsConfig',
+    # 'Apps.Billings.apps.BillingsConfig',
 ]
 
 MIDDLEWARE = [
@@ -104,6 +103,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'Apps' / 'Parkings' / 'templates',
+            BASE_DIR / 'Apps' / 'Accounts' / 'templates',
         ],
         'APP_DIRS': True, # This line is CRITICAL for the admin
         'OPTIONS': {

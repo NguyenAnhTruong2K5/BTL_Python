@@ -8,7 +8,7 @@ USE ParkingManagement;
 GO
 
 -- ========================================
--- SEQUENCES
+-- SEQUENCES (dùng cho id tự sinh)
 -- ========================================
 CREATE SEQUENCE seq_card START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_record START WITH 1 INCREMENT BY 1;
@@ -28,7 +28,7 @@ CREATE TABLE Customer (
 GO
 
 -- ========================================
--- ParkingSlot
+-- ParkingSlot (CHỈ 2 cột: capacity, slots)
 -- ========================================
 CREATE TABLE ParkingSlot (
     capacity INT NOT NULL,
@@ -88,8 +88,7 @@ CREATE TABLE ParkingRecord (
     check_in_time DATETIME NOT NULL,
     check_out_time DATETIME NULL,
     image_path VARCHAR(500) NULL DEFAULT NULL,
-    FOREIGN KEY (card_id) REFERENCES Card(card_id),
-    FOREIGN KEY (plate_number) REFERENCES Contract(plate_number)
+    FOREIGN KEY (card_id) REFERENCES Card(card_id)
 );
 GO
 
@@ -99,11 +98,9 @@ GO
 CREATE TABLE contract_invoice (
     invoice_id VARCHAR(30) PRIMARY KEY
         DEFAULT ('CINV' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_contract_invoice AS VARCHAR(6)), 6)),
-    plate_number VARCHAR(20) NOT NULL,
     pricing_id VARCHAR(50) NOT NULL,
     amount DECIMAL(18,2) NOT NULL,
     payment_date DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (plate_number) REFERENCES Contract(plate_number),
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id)
 );
 GO
@@ -115,32 +112,10 @@ CREATE TABLE parking_invoice (
     invoice_id VARCHAR(30) PRIMARY KEY
         DEFAULT ('PINV' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_parking_invoice AS VARCHAR(6)), 6)),
     record_id VARCHAR(30) NOT NULL,
-    plate_number VARCHAR(20) NOT NULL,
     pricing_id VARCHAR(50) NULL,
     amount DECIMAL(18,2) NOT NULL,
     payment_date DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (record_id) REFERENCES ParkingRecord(record_id),
-    FOREIGN KEY (plate_number) REFERENCES Contract(plate_number),
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id)
 );
 GO
-
-
-    
-Use ParkingManagement;
-GO
-
-INSERT INTO Pricing (pricing_id, vehicle_type, term, rate)
-VALUES
-('1', 'motorbike', 'hourly', 3000),   -- 3k/h
-('2', 'car', 'hourly', 10000),        -- 10k/h
-('3', 'motorbike', 'monthly', 300000),-- 300k/tháng
-('4', 'car', 'monthly', 1000000),     -- 1000k/tháng
-('5', 'motorbike', 'yearly', 800000), --800k/năm
-('6', 'car', 'yearly', 2000000); --2000k/năm
-GO
-
--- Khởi tạo duy nhất 1 dòng cho bãi A, 100 chỗ
-INSERT INTO ParkingSlot (capacity, slots) VALUES (100, 100);
-GO
-

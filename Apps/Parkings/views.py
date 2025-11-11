@@ -9,7 +9,7 @@ from . import services
 # Trang chính
 # ==============================
 def index(request):
-    return render(request, "parkings/base.html")
+    return render(request, "D:\Code\PythonProject\BTL-Python\Clone\Apps\Parkings\\templates\parkings\home.html")
 
 
 # ==============================

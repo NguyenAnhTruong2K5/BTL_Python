@@ -1,7 +1,9 @@
 {% extends "parkings/base.html" %}
 {% block content %}
+<div class=" main container mt-4 p-3 rounded-4">
+  <h1 class="mb-4 text-center text-danger">Quản lý thẻ</h1>
 <div class="container mt-4">
-  <h2>➕ Thêm thẻ mới</h2>
+  <h2>Thêm thẻ mới</h2>
   <form method="POST">
     {% csrf_token %}
     <p>Bấm nút bên dưới để tạo một thẻ mới (trạng thái mặc định: <b>inactive</b>).</p>
@@ -11,7 +13,8 @@
   <hr>
 
   <h4>Danh sách thẻ hiện có</h4>
-  <table class="table table-bordered mt-3">
+  
+    <table class="table table-bordered mt-3">
     <thead>
       <tr>
         <th style="width: 100px;">Mã thẻ</th>
@@ -28,6 +31,7 @@
       <tr>
         <td colspan="2" class="text-center text-muted">Chưa có thẻ nào</td>
       </tr>
+  </div>
       {% endfor %}
     </tbody>
   </table>

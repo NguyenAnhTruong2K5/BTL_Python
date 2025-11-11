@@ -1,3 +1,4 @@
+from django.shortcuts import render, redirect
 from rest_framework import generics, filters
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
@@ -49,11 +50,9 @@ class CreateContractView(generics.CreateAPIView):
         serializer.save(cccd= customer_instance)
 
 class ListContractView(generics.ListAPIView):
+    queryset = Contract.objects.all()
     serializer_class = ListContractSerializer
-    def get_queryset(self):
-        customer_cccd = self.kwargs['cccd']
-        query_set = Contract.objects.all().filter(cccd_id= customer_cccd)
-        return query_set
+    pagination_class = StandardResultsSetPagination
 
 class SearchContractView(generics.ListAPIView):
     queryset = Contract.objects.all()
@@ -72,3 +71,50 @@ class DeleteContractView(generics.DestroyAPIView):
     serializer_class = DeleteContractSerializer
 
 
+
+def statistics(request):
+    # Tổng số khách hàng
+    total_customers = Customer.objects.count()
+    
+    # Tổng số hợp đồng và phân loại
+    total_contracts = Contract.objects.count()
+    monthly_contracts = Contract.objects.filter(term='monthly').count()
+    yearly_contracts = Contract.objects.filter(term='yearly').count()
+    
+    # Số hợp đồng theo trạng thái
+    valid_contracts = Contract.objects.filter(status='valid').count()
+    invalid_contracts = Contract.objects.filter(status='invalid').count()
+    
+    context = {
+        'total_customers': total_customers,
+        'total_contracts': total_contracts,
+        'contract_types': {
+            'monthly': monthly_contracts,
+            'yearly': yearly_contracts
+        },
+        'contract_status': {
+            'valid': valid_contracts,
+            'invalid': invalid_contracts
+        }
+    }
+    return render(request, 'accounts/statistics.html', context)
+# Template Views
+def customer_list(request):
+    return render(request, 'accounts/customer/list.html')
+
+def customer_create(request):
+    return render(request, 'accounts/customer/create.html')
+
+def customer_update(request, pk):
+    customer = get_object_or_404(Customer, pk=pk)
+    return render(request, 'accounts/customer/update.html', {'customer': customer})
+
+def contract_list(request):
+    return render(request, 'accounts/contract/list.html')
+
+def contract_create(request):
+    return render(request, 'accounts/contract/create.html')
+
+def contract_update(request, pk):
+    contract = get_object_or_404(Contract, pk=pk)
+    return render(request, 'accounts/contract/update.html', {'contract': contract})
