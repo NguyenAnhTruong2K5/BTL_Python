@@ -43,7 +43,7 @@ CREATE TABLE Pricing (
     pricing_id VARCHAR(50) PRIMARY KEY,
     vehicle_type VARCHAR(20) NOT NULL CHECK(vehicle_type IN ('motorbike','car')),
     term VARCHAR(10) NOT NULL CHECK(term IN ('hourly','monthly','yearly')),
-    rate DECIMAL(18,2) NOT NULL
+    rate INT NOT NULL
 );
 GO
 
@@ -101,7 +101,7 @@ CREATE TABLE contract_invoice (
         DEFAULT ('CINV' + RIGHT('000000' + CAST(NEXT VALUE FOR seq_contract_invoice AS VARCHAR(6)), 6)),
     plate_number VARCHAR(20) NOT NULL,
     pricing_id VARCHAR(50) NOT NULL,
-    amount DECIMAL(18,2) NOT NULL,
+    amount INT NOT NULL,
     payment_date DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (plate_number) REFERENCES Contract(plate_number),
     FOREIGN KEY (pricing_id) REFERENCES Pricing(pricing_id)
@@ -117,7 +117,7 @@ CREATE TABLE parking_invoice (
     record_id VARCHAR(30) NOT NULL,
     plate_number VARCHAR(20) NOT NULL,
     pricing_id VARCHAR(50) NULL,
-    amount DECIMAL(18,2) NOT NULL,
+    amount INT NOT NULL,
     payment_date DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (record_id) REFERENCES ParkingRecord(record_id),
     FOREIGN KEY (plate_number) REFERENCES Contract(plate_number),
