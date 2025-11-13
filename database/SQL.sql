@@ -111,7 +111,3 @@ VALUES
 ('6', 'car', 'yearly', 2000000); --2000k/năm
 GO
 
--- Khởi tạo duy nhất 1 dòng cho bãi A, 100 chỗ
-INSERT INTO ParkingSlot (capacity, slots) VALUES (100, 100);
-GO
-
